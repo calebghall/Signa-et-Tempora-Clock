@@ -1676,7 +1676,7 @@
         const precessionOffset = yearsSince2000 * 0.0139696; 
         
         // --- 2. DEFINE BOUNDARIES ---
-        const isAstroMode = document.getElementById('zodiacModeToggle').checked;
+        const isAstroMode = document.getElementById('zodiacNormToggle').checked;
         
         // IAU J2000 Boundaries (Ophiuchus split at 253.5 midpoint)
         const iauBoundaries = [
@@ -1717,44 +1717,6 @@
             } else {
                 ctx.font = '14px "Segoe UI Symbol", "Apple Symbols", sans-serif'; 
                 drawCurvedText(zodiacSymbols[i], zodiacRingR, midAngle, 0);
-            }
-        }
-        
-        const zodiacRingR = effectiveRadius + 28;
-        
-        ctx.beginPath();
-        ctx.arc(0, 0, zodiacRingR, 0, 2 * Math.PI);
-        ctx.lineWidth = 18;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-        ctx.stroke();
-
-        const zodiacSymbols = ['\u2648\uFE0E', '\u2649\uFE0E', '\u264A\uFE0E', '\u264B\uFE0E', '\u264C\uFE0E', '\u264D\uFE0E', '\u264E\uFE0E', '\u264F\uFE0E', '\u2650\uFE0E', '\u2651\uFE0E', '\u2652\uFE0E', '\u2653\uFE0E'];
-        const zodiacNames = ['ARIES', 'TAURUS', 'GEMINI', 'CANCER', 'LEO', 'VIRGO', 'LIBRA', 'SCORPIO', 'SAGITTARIUS', 'CAPRICORN', 'AQUARIUS', 'PISCES'];
-        
-        ctx.fillStyle = '#6b7280';
-        
-        for (let i = 0; i < 12; i++) {
-            // Convert the starting degree to radians and add Math.PI to match your clock's orientation
-            let startRad = currentAstroBoundaries[i] * (Math.PI / 180);
-            let sepAngle = Math.PI + startRad;
-
-            ctx.beginPath();
-            ctx.moveTo((zodiacRingR - 9) * Math.cos(sepAngle), (zodiacRingR - 9) * Math.sin(sepAngle));
-            ctx.lineTo((zodiacRingR + 9) * Math.cos(sepAngle), (zodiacRingR + 9) * Math.sin(sepAngle));
-            ctx.lineWidth = 1.5;
-            ctx.strokeStyle = '#374151';
-            ctx.stroke();
-
-            // Find the middle of the constellation to place the text/icon
-            let nextRad = (i === 11) ? (currentAstroBoundaries[0] + 360) * (Math.PI / 180) : currentAstroBoundaries[i + 1] * (Math.PI / 180);
-            let textAngle = Math.PI + startRad + ((nextRad - startRad) / 2);
-            
-            if (isZodiacTextMode) {
-                ctx.font = '600 7px sans-serif'; 
-                drawCurvedText(zodiacNames[i], zodiacRingR, textAngle, 1);
-            } else {
-                ctx.font = '14px "Segoe UI Symbol", "Apple Symbols", sans-serif'; 
-                drawCurvedText(zodiacSymbols[i], zodiacRingR, textAngle);
             }
         }
 
