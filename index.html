@@ -816,6 +816,9 @@
         document.getElementById('labelZodiacIcon').classList.toggle('active', !isZodiacTextMode);
         document.getElementById('labelZodiacText').classList.toggle('active', isZodiacTextMode);
 
+        document.getElementById('labelZodiacAstro').classList.toggle('active', !isZodiacNormMode);
+        document.getElementById('labelZodiacNorm').classList.toggle('active', isZodiacNormMode);
+
         document.getElementById('labelSeasonOff').classList.toggle('active', !isSeasonLabelMode);
         document.getElementById('labelSeasonOn').classList.toggle('active', isSeasonLabelMode);
 
@@ -1235,7 +1238,7 @@
         localStorage.setItem('uh_zodNormMode', isZodiacNormMode);
         updateToggleLabels();
     }
-    function setZodiacNormMode(isText) { document.getElementById('zodiacNormToggle').checked = isText; toggleZodiacNormMode(); }
+    function setZodiacNormMode(isOn) { document.getElementById('zodiacNormToggle').checked = isOn; toggleZodiacNormMode(); }
     
     function toggleSeasonMode() {
         isSeasonLabelMode = document.getElementById('seasonToggle').checked;
