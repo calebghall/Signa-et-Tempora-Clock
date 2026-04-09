@@ -1580,6 +1580,14 @@
         };
     }
 
+    function getMoonPosition(now, lat, lon) {
+        const observer = new Astronomy.Observer(lat, lon, 0);
+        const astroTime = new Astronomy.AstroTime(now);
+        const equatorial = Astronomy.Equator(Astronomy.Body.Moon, astroTime, observer, true, true);
+        const horizontal = Astronomy.Horizon(astroTime, observer, equatorial.ra, equatorial.dec, 'normal');
+        return horizontal.altitude; // positive = above horizon, negative = below
+    }
+
     // Formatter using localized API timezone
     function formatLocalTime(dateObj) {
         try {
@@ -1686,22 +1694,75 @@
         // Sun: geocentric ecliptic longitude via GeoVector → Ecliptic conversion
         const sunVec = Astronomy.GeoVector(Astronomy.Body.Sun, astroTime, true);
         const sunEcl = Astronomy.Ecliptic(sunVec);
-        const seasonAngle = Math.PI + (sunEcl.elon * Math.PI / 180);
-
+        const seasonAngle = (Math.PI - (sunEcl.elon * Math.PI / 180)) % (2 * Math.PI);
+        
         // Moon: geocentric ecliptic longitude
         const moonVec = Astronomy.GeoVector(Astronomy.Body.Moon, astroTime, true);
         const moonEcl = Astronomy.Ecliptic(moonVec);
-        const moonZodiacAngle = Math.PI + (moonEcl.elon * Math.PI / 180);
-
-        // Moon phase: MoonPhase() returns degrees of elongation (0=new, 180=full, 360=new)
+        const moonSunDiff = (moonEcl.elon - sunEcl.elon) * Math.PI / 180;
+        const moonZodiacAngle = seasonAngle - moonSunDiff;
         const phaseFraction = Astronomy.MoonPhase(astroTime) / 360;
 
         if (hour > 12) { hour = 12; minute = 59; }
 
-        updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now);
+        const moonPos = getMoonPosition(now, currentLat, currentLon);
+
+        const moonAltitude = getMoonPosition(now, currentLat, currentLon);
+
+        const observer = new Astronomy.Observer(currentLat, currentLon, 0);
+        
+        // 1. Start searching from 2 days ago to guarantee we catch the start of the current arc
+        const twoDaysAgo = new Date(now.getTime() - (2 * 86400000));
+        let searchStart = new Astronomy.AstroTime(twoDaysAgo);
+        
+        let mRise = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, searchStart, 3);
+        let mSet  = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, searchStart, 3);
+        
+        let moonContinuousHour = null;
+        let arcStart, arcEnd, currentPhase;
+
+        // 2. Step forward chronologically until we bracket 'now'
+        for (let i = 0; i < 5; i++) {
+            if (mRise && mSet) {
+                let rTime = mRise.date.getTime();
+                let sTime = mSet.date.getTime();
+                let nowMs = now.getTime();
+
+                if (rTime < sTime) {
+                    // Moon is UP between rTime and sTime
+                    if (nowMs >= rTime && nowMs <= sTime) {
+                        arcStart = rTime; arcEnd = sTime; currentPhase = 'day'; break;
+                    }
+                    // Advance mRise to the next one after this set
+                    mRise = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, mSet.date, 3);
+                } else {
+                    // Moon is DOWN between sTime and rTime
+                    if (nowMs >= sTime && nowMs <= rTime) {
+                        arcStart = sTime; arcEnd = rTime; currentPhase = 'night'; break;
+                    }
+                    // Advance mSet to the next one after this rise
+                    mSet = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, mRise.date, 3);
+                }
+            } else {
+                break; // Fallback if searches fail
+            }
+        }
+
+        // 3. Project continuously across all 24 unequal hours
+        if (arcStart && arcEnd) {
+            let fraction = (now.getTime() - arcStart) / (arcEnd - arcStart);
+            if (currentPhase === 'day') {
+                moonContinuousHour = fraction * 12; // 0 to 12 (Above horizon)
+            } else {
+                moonContinuousHour = 12 + (fraction * 12); // 12 to 24 (Below horizon)
+            }
+        }
+        // --- END MOON CALCULATION FIX ---
+
+        updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour);
     }
 
-    function updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now) {
+    function updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour) {
         const digitalTime = document.getElementById('digitalTime');
         const periodLabel = document.getElementById('periodLabel');
         const searchBtn = document.getElementById('searchBtn');
@@ -1732,10 +1793,10 @@
             searchBtn.style.color = '#000';
         }
 
-        drawClock(continuousHourFloat, isDay, accentColor, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now);
+        drawClock(continuousHourFloat, isDay, accentColor, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour);
     }
 
-    function drawClock(continuousHourFloat, isDay, accentColor, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now) {
+    function drawClock(continuousHourFloat, isDay, accentColor, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour) {
         const canvas = document.getElementById('clockCanvas');
         const ctx = canvas.getContext('2d');
         
@@ -1870,7 +1931,7 @@
         
         ctx.fillStyle = '#6b7280';
         for (let i = 0; i < 12; i++) {
-            let startAngle = ((cumDays[i] - 80) / 365) * 2 * Math.PI + Math.PI;
+            let startAngle = -((cumDays[i] - 80) / 365) * 2 * Math.PI + Math.PI;
             
             ctx.beginPath();
             ctx.moveTo((monthsRingR - 6.5) * Math.cos(startAngle), (monthsRingR - 6.5) * Math.sin(startAngle));
@@ -1879,8 +1940,8 @@
             ctx.strokeStyle = '#374151';
             ctx.stroke();
 
-            let nextAngle = (((cumDays[(i+1)%12] || 365) - 80) / 365) * 2 * Math.PI + Math.PI;
-            if (i === 11) nextAngle = ((365 - 80) / 365) * 2 * Math.PI + Math.PI;
+            let nextAngle = -(((cumDays[(i+1)%12] || 365) - 80) / 365) * 2 * Math.PI + Math.PI;
+            if (i === 11) nextAngle = -((365 - 80) / 365) * 2 * Math.PI + Math.PI;
             let midAngle = startAngle + (nextAngle - startAngle) / 2;
             
             ctx.font = '600 6px sans-serif'; 
@@ -1924,7 +1985,7 @@
             let span = nextDeg - startDeg;
             if (span < 0) span += 360;
         
-            let startRad = (startDeg * Math.PI / 180) + Math.PI;
+            let startRad = (-startDeg * Math.PI / 180) + Math.PI;
         
             // Draw Divider Lines
             ctx.beginPath();
@@ -1936,7 +1997,7 @@
         
             // Label Placement (Midpoint Method)
             let midDeg = startDeg + (span / 2);
-            let midAngle = (midDeg * Math.PI / 180) + Math.PI;
+            let midAngle = (-midDeg * Math.PI / 180) + Math.PI;
         
             if (isZodiacTextMode) {
                 ctx.font = '600 7px sans-serif'; 
@@ -2047,13 +2108,22 @@
 
         // Moon Indicator (Draws over top of the month track)
         const moonR = monthsRingR;
-        let mx = moonR * Math.cos(moonZodiacAngle);
-        let my = moonR * Math.sin(moonZodiacAngle);
-        
+        let moonAngle;
+
+        if (moonContinuousHour !== null) {
+            // Convert the moon's actual clock-face angle back into the rotated ring's frame
+            moonAngle = getAngle(moonContinuousHour) - zodiacRotationOffset;
+        } else {
+            // Moon is below horizon — keep zodiac position (or you could skip drawing)
+            moonAngle = moonZodiacAngle;
+        }
+
+        let mx = moonR * Math.cos(moonAngle);
+        let my = moonR * Math.sin(moonAngle);
+
         ctx.save();
         ctx.translate(mx, my);
-        // Rotate so lit face dynamically points along the curve towards the Sun
-        ctx.rotate(moonZodiacAngle - Math.PI / 2);
+        ctx.rotate(moonAngle - Math.PI / 2);
         drawMoonPhase(ctx, phaseFraction, 5.5, 7.5);
         ctx.restore();
 
