@@ -647,6 +647,14 @@
             <span class="toggle-label right" id="labelFlex" onclick="setMode(true)">Proportional</span>
         </div>
         <div class="toggle-wrapper">
+            <span class="toggle-label left active" id="labelPlanetsOff" onclick="setPlanetsMode(false)">Hide Planets</span>
+            <label class="switch">
+                <input type="checkbox" id="planetsToggle" onchange="togglePlanetsMode()">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label right" id="labelPlanetsOn" onclick="setPlanetsMode(true)">Show Planets</span>
+        </div>
+        <div class="toggle-wrapper">
             <span class="toggle-label left active" id="labelZodiacIcon" onclick="setZodiacMode(false)">Zodiac Icons</span>
             <label class="switch">
                 <input type="checkbox" id="zodiacToggle" onchange="toggleZodiacMode()">
@@ -977,6 +985,7 @@
 
     // Toggles
     let isProportionalMode = false;
+    let isPlanetsMode = false;
     let isZodiacTextMode = false;
     let isZodiacNormMode = false;
     let isSeasonLabelMode = true;
@@ -1039,6 +1048,12 @@
             isProportionalMode = localStorage.getItem('uh_propMode') === 'true';
             document.getElementById('modeToggle').checked = isProportionalMode;
         }
+        if (localStorage.getItem('uh_planetsMode') !== null) {
+            isPlanetsMode = localStorage.getItem('uh_planetsMode') === 'true';
+            document.getElementById('planetsToggle').checked = isPlanetsMode;
+        } else {
+            document.getElementById('planetsToggle').checked = false;
+        }
         if (localStorage.getItem('uh_zodMode') !== null) {
             isZodiacTextMode = localStorage.getItem('uh_zodMode') === 'true';
             document.getElementById('zodiacToggle').checked = isZodiacTextMode;
@@ -1074,6 +1089,9 @@
         document.getElementById('labelFixed').classList.toggle('active', !isProportionalMode);
         document.getElementById('labelFlex').classList.toggle('active', isProportionalMode);
         
+        document.getElementById('labelPlanetsOff').classList.toggle('active', !isPlanetsMode);
+        document.getElementById('labelPlanetsOn').classList.toggle('active', isPlanetsMode);
+
         document.getElementById('labelZodiacIcon').classList.toggle('active', !isZodiacTextMode);
         document.getElementById('labelZodiacText').classList.toggle('active', isZodiacTextMode);
 
@@ -1487,6 +1505,13 @@
     }
     function setMode(isProp) { document.getElementById('modeToggle').checked = isProp; toggleMode(); }
 
+    function togglePlanetsMode() {
+        isPlanetsMode = document.getElementById('planetsToggle').checked;
+        localStorage.setItem('uh_planetsMode', isPlanetsMode);
+        updateToggleLabels();
+    }
+    function setPlanetsMode(isOn) { document.getElementById('planetsToggle').checked = isOn; togglePlanetsMode(); }
+
     function toggleZodiacMode() {
         isZodiacTextMode = document.getElementById('zodiacToggle').checked;
         localStorage.setItem('uh_zodMode', isZodiacTextMode);
@@ -1695,6 +1720,23 @@
         const sunVec = Astronomy.GeoVector(Astronomy.Body.Sun, astroTime, true);
         const sunEcl = Astronomy.Ecliptic(sunVec);
         const seasonAngle = (Math.PI - (sunEcl.elon * Math.PI / 180)) % (2 * Math.PI);
+
+        const planets = [];
+        if (isPlanetsMode) {
+            const planetDefs = [
+                { name: 'Mercury', body: Astronomy.Body.Mercury, color: '#9ca3af', symbol: '☿' },
+                { name: 'Venus',   body: Astronomy.Body.Venus,   color: '#f0d080', symbol: '♀' },
+                { name: 'Mars',    body: Astronomy.Body.Mars,    color: '#ef4444', symbol: '♂' },
+                { name: 'Jupiter', body: Astronomy.Body.Jupiter, color: '#fb923c', symbol: '♃' },
+                { name: 'Saturn',  body: Astronomy.Body.Saturn,  color: '#a78bfa', symbol: '♄' },
+            ];
+            for (const planet of planetDefs) {
+                const vec = Astronomy.GeoVector(planet.body, astroTime, true);
+                const ecl = Astronomy.Ecliptic(vec);
+                planet.angle = Math.PI - (ecl.elon * Math.PI / 180);
+                planets.push(planet);
+            }
+        }
         
         // Moon: geocentric ecliptic longitude
         const moonVec = Astronomy.GeoVector(Astronomy.Body.Moon, astroTime, true);
@@ -1759,11 +1801,10 @@
         }
         // --- END MOON CALCULATION FIX ---
 
-        updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour);
+        updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets);
     }
 
-    function updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour) {
-        const digitalTime = document.getElementById('digitalTime');
+    function updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets) {        const digitalTime = document.getElementById('digitalTime');
         const periodLabel = document.getElementById('periodLabel');
         const searchBtn = document.getElementById('searchBtn');
 
@@ -1793,10 +1834,10 @@
             searchBtn.style.color = '#000';
         }
 
-        drawClock(continuousHourFloat, isDay, accentColor, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour);
+        drawClock(continuousHourFloat, isDay, accentColor, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets);
     }
 
-    function drawClock(continuousHourFloat, isDay, accentColor, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour) {
+    function drawClock(continuousHourFloat, isDay, accentColor, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets) {
         const canvas = document.getElementById('clockCanvas');
         const ctx = canvas.getContext('2d');
         
@@ -2101,20 +2142,74 @@
 
         // --- DRAW POSITION INDICATORS ---
         
-        // Sun Indicator (Draws over top of the season track)
+        // Sun Indicator
         const sunR = seasonRingR; 
         let zx = sunR * Math.cos(seasonAngle);
         let zy = sunR * Math.sin(seasonAngle);
-        
+
+        ctx.save();
+        ctx.translate(zx, zy);
+        ctx.rotate(seasonAngle);
+
+        // Rays
+        const numRays = 8;
+        for (let i = 0; i < numRays; i++) {
+            const rayAngle = (i / numRays) * 2 * Math.PI;
+            const tipR = 12;
+            const baseR = 8;
+            const halfWidth = 0.4; // radians
+
+            ctx.beginPath();
+            ctx.moveTo(Math.cos(rayAngle) * tipR, Math.sin(rayAngle) * tipR);
+            ctx.lineTo(Math.cos(rayAngle - halfWidth) * baseR, Math.sin(rayAngle - halfWidth) * baseR);
+            ctx.lineTo(Math.cos(rayAngle + halfWidth) * baseR, Math.sin(rayAngle + halfWidth) * baseR);
+            ctx.closePath();
+            ctx.fillStyle = '#fbbf24';
+            ctx.fill();
+        }
+
+        // Outer dark ring
         ctx.beginPath();
-        ctx.arc(zx, zy, 7.5, 0, 2 * Math.PI); 
+        ctx.arc(0, 0, 7.5, 0, 2 * Math.PI);
         ctx.fillStyle = '#1c1c21';
         ctx.fill();
 
+        // Inner sun disk
         ctx.beginPath();
-        ctx.arc(zx, zy, 5.5, 0, 2 * Math.PI);
+        ctx.arc(0, 0, 6, 0, 2 * Math.PI);
         ctx.fillStyle = '#fbbf24';
         ctx.fill();
+
+        ctx.restore();
+
+        // --- DRAW PLANET INDICATORS ---
+        for (const planet of planets) {
+            const px = seasonRingR * Math.cos(planet.angle);
+            const py = seasonRingR * Math.sin(planet.angle);
+
+            // Outer dark ring
+            ctx.beginPath();
+            ctx.arc(px, py, 8, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1c1c21';
+            ctx.fill();
+
+            // Colored circle
+            ctx.beginPath();
+            ctx.arc(px, py, 7, 0, 2 * Math.PI);
+            ctx.fillStyle = planet.color;
+            ctx.fill();
+
+            // Symbol inside
+            ctx.save();
+            ctx.translate(px, py);
+            ctx.rotate(-zodiacRotationOffset);
+            ctx.font = 'bold 14px sans-serif';
+            ctx.fillStyle = '#1c1c21';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(planet.symbol, 0, 0);
+            ctx.restore();
+        }
 
         // Moon Indicator (Draws over top of the month track)
         const moonR = monthsRingR;
