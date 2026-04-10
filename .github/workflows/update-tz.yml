@@ -1,0 +1,43 @@
+name: Update Timezone Submodule
+on:
+  schedule:
+    - cron: '0 0 1 * *' # Midnight on the 1st of every month
+  workflow_dispatch:   # Manual "Play" button in GitHub UI
+
+jobs:
+  update-submodule:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Update Submodule
+        run: |
+          # 1. Update the pointer to the latest remote commit
+          git submodule update --remote --recursive
+          
+      - name: Check for changes
+        id: check_changes
+        run: |
+          # Check if the submodule pointer actually moved
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.check_changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "chore: update timezone submodule data"
+          title: "Update Timezone Library"
+          body: "This is an automated PR to update the tz-lookup submodule to the latest remote version."
+          branch: "auto-update-tz"
