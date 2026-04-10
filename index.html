@@ -1560,27 +1560,108 @@
         if (e.key === 'Enter') { fetchCoordinates(); }
     }
 
+    // LOCATION SEARCH BAR
+    // Configuration and State
+    const SEARCH_CONFIG = {
+        tier1Path: 'citydata/tier1.json',
+        tier2Path: 'citydata/tier2.json'
+    };
+
+    let tier1 = null;
+    let tier2 = null;
+
+    /**
+     * Helper: Formats user input to match the Python script's pipe-separated keys.
+     * "Paris, TX" -> "paris|tx"
+     */
+    function formatQuery(input) {
+        return input.toLowerCase()
+            .replace(/, /g, '|') // handles comma + space
+            .replace(/,/g, '|')  // handles comma only
+            .trim();
+    }
+
+    /**
+     * Helper: Extracts city data from a loaded tier object.
+     */
+    function getCityFromTier(tier, query) {
+        if (!tier || !tier.k) return null;
+        const index = tier.k[query];
+        if (index === undefined) return null;
+
+        const record = tier.r[index]; // [CountryID, StateID, Lat, Lon]
+        return {
+            country: tier.m[record[0]],
+            state:   tier.m[record[1]],
+            lat:     record[2],
+            lon:     record[3],
+            attribution: tier.a // The metadata you added in Python
+        };
+    }
+
     async function fetchCoordinates() {
-        const city = document.getElementById('cityInput').value;
+        const inputField = document.getElementById('cityInput');
         const info = document.getElementById('locationInfo');
-        if (!city.trim()) return;
-        
-        info.innerText = 'Searching location...';
+        const rawValue = inputField.value.trim();
 
-        try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&limit=1`);
-            const data = await response.json();
+        if (!rawValue) return;
 
-            if (data && data.length > 0) {
-                const lat = parseFloat(data[0].lat);
-                const lon = parseFloat(data[0].lon);
-                const cityName = data[0].name.split(',')[0];
-                setAndSaveLocation(cityName, lat, lon);
-            } else {
-                info.innerText = 'Location not found. Try another city.';
+        // 1. REGEX CHECK: Does the input look like "35.2, -89.6"?
+        // This looks for: Optional minus, numbers, optional decimal, optional comma, optional minus, numbers, optional decimal
+        const coordRegex = /^(-?\d+\.?\d*)\s*,?\s*(-?\d+\.?\d*)$/;
+        const coordMatch = rawValue.match(coordRegex);
+
+        if (coordMatch) {
+            const lat = parseFloat(coordMatch[1]);
+            const lon = parseFloat(coordMatch[2]);
+
+            // Basic validation for Earth coordinates
+            if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+                info.innerText = `Using coordinates: ${lat}, ${lon}`;
+                setAndSaveLocation(lat+", "+lon, lat, lon);
+                return; // EXIT early, no need to load JSON
             }
-        } catch (error) {
-            info.innerText = 'Error fetching data. Please try again.';
+        }
+
+        // 2. CITY SEARCH: If not coordinates, proceed to JSON logic
+        const query = formatQuery(rawValue);
+        info.innerText = 'Searching...';
+
+        // Load Tier 1 if needed
+        if (!tier1) {
+            info.innerText = 'Initializing search engine...';
+            try {
+                const response = await fetch(SEARCH_CONFIG.tier1Path);
+                tier1 = await response.json();
+            } catch (error) {
+                info.innerText = 'Error loading city database.';
+                return;
+            }
+        }
+
+        let cityData = getCityFromTier(tier1, query);
+
+        // Search Tier 2 if not found
+        if (!cityData) {
+            if (!tier2) {
+                info.innerText = 'Searching deeper records...';
+                try {
+                    const response = await fetch(SEARCH_CONFIG.tier2Path);
+                    tier2 = await response.json();
+                } catch (error) {
+                    info.innerText = 'Error loading deep database.';
+                    return;
+                }
+            }
+            cityData = getCityFromTier(tier2, query);
+        }
+
+        if (cityData) {
+            info.innerText = `Found: ${cityData.state}, ${cityData.country}`;
+            const cityName = rawValue.split(',')[0].trim();
+            setAndSaveLocation(cityName, cityData.lat, cityData.lon);
+        } else {
+            info.innerText = 'City not found. Try "City, ST" or "Lat, Lon".';
         }
     }
 
