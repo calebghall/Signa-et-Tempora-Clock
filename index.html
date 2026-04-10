@@ -1139,19 +1139,16 @@
         startClock();
     }
 
-    async function fetchTimezone(lat, lon) {
+    function fetchTimezone(lat, lon) {
+        const tzNote = document.getElementById('timezoneNote');
+        if (!tzNote) return; // Safety check for the "null" error
+
         try {
-            const response = await fetch(`https://api.wheretheiss.at/v1/coordinates/${lat},${lon}`);
-            const data = await response.json();
-            if (data && data.timezone_id) {
-                currentTimeZone = data.timezone_id;
-            } else {
-                currentTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            }
+            currentTimeZone = tzlookup(lat, lon);
         } catch (e) {
             currentTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         }
-        document.getElementById('timezoneNote').innerText = `(${currentTimeZone})`;
+        tzNote.innerText = `(${currentTimeZone})`;
     }
 
     function useFallbackLocation() {
@@ -1159,7 +1156,7 @@
         fetchCoordinates(); 
     }
 
-    async function initLocation() {
+    function initLocation() {
         loadSettings();
 
         const savedCity = localStorage.getItem('unequalClockCity');
