@@ -659,6 +659,14 @@
             <span class="toggle-label right" id="labelFlex" onclick="setMode(true)">Proportional</span>
         </div>
         <div class="toggle-wrapper">
+            <span class="toggle-label left active" id="labelPlanetaryWeek" onclick="setWeekMode(false)">Planetary Week</span>
+            <label class="switch">
+                <input type="checkbox" id="weekModeToggle" onchange="toggleWeekMode()">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label right" id="labelChristianWeek" onclick="setWeekMode(true)">Christian Week</span>
+        </div>
+        <div class="toggle-wrapper">
             <span class="toggle-label left active" id="labelPlanetsOff" onclick="setPlanetsMode(false)">Hide Planets</span>
             <label class="switch">
                 <input type="checkbox" id="planetsToggle" onchange="togglePlanetsMode()">
@@ -1006,6 +1014,8 @@
     let isSeasonTextMode = true;
     let isLiturgicalMode = true;
     let isLiturgicalTextMode = true;
+    let isChristianWeekMode = false;
+
 
     // --- OFFLINE SUPPORT ---
     // 1. Automatically cache this HTML page locally
@@ -1096,6 +1106,12 @@
         } else {
             document.getElementById('litTextToggle').checked = true;
         }
+        if (localStorage.getItem('uh_weekMode') !== null) {
+            isChristianWeekMode = localStorage.getItem('uh_weekMode') === 'true';
+            document.getElementById('weekModeToggle').checked = isChristianWeekMode;
+        } else {
+            document.getElementById('weekModeToggle').checked = false;
+        }
         updateToggleLabels();
     }
 
@@ -1123,6 +1139,9 @@
 
         document.getElementById('labelLitTextOff').classList.toggle('active', !isLiturgicalTextMode);
         document.getElementById('labelLitTextOn').classList.toggle('active', isLiturgicalTextMode);
+
+        document.getElementById('labelPlanetaryWeek').classList.toggle('active', !isChristianWeekMode);
+        document.getElementById('labelChristianWeek').classList.toggle('active', isChristianWeekMode);
     }
 
     function setAndSaveLocation(city, lat, lon) {
@@ -1556,6 +1575,13 @@
     }
     function setLiturgicalTextMode(isOn) { document.getElementById('litTextToggle').checked = isOn; toggleLiturgicalTextMode(); }
 
+    function toggleWeekMode() {
+        isChristianWeekMode = document.getElementById('weekModeToggle').checked;
+        localStorage.setItem('uh_weekMode', isChristianWeekMode);
+        updateToggleLabels();
+    }
+    function setWeekMode(isOn) { document.getElementById('weekModeToggle').checked = isOn; toggleWeekMode(); }
+
     function handleKeyPress(e) {
         if (e.key === 'Enter') { fetchCoordinates(); }
     }
@@ -1901,10 +1927,10 @@
         }
         // --- END MOON CALCULATION FIX ---
 
-        updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets, todaySun);
+        updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets, isChristianWeekMode, todaySun);
     }
 
-    function updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets, todaySun) {        const digitalTime = document.getElementById('digitalTime');
+    function updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets, isChristianWeekMode, todaySun) {        const digitalTime = document.getElementById('digitalTime');
         const periodLabel = document.getElementById('periodLabel');
         const searchBtn = document.getElementById('searchBtn');
 
@@ -1934,10 +1960,10 @@
             searchBtn.style.color = '#000';
         }
 
-        drawClock(continuousHourFloat, isDay, accentColor, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets, todaySun);
+        drawClock(continuousHourFloat, isDay, accentColor, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets, isChristianWeekMode, todaySun);
     }
 
-    function drawClock(continuousHourFloat, isDay, accentColor, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets, todaySun) {
+    function drawClock(continuousHourFloat, isDay, accentColor, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets, isChristianWeekMode, todaySun) {
         const canvas = document.getElementById('clockCanvas');
         const ctx = canvas.getContext('2d');
         
@@ -2058,8 +2084,57 @@
 
         const daysInYear = (now.getUTCFullYear() % 4 === 0 && now.getUTCFullYear() % 100 !== 0) || (now.getUTCFullYear() % 400 === 0) ? 366 : 365;
 
+        // --- DAY OF WEEK RING ---
+        const weekRingR = effectiveRadius + 12;
+        const daySegAngle = (2 * Math.PI) / 7;
+        const weekLineWidth = 10; // Thickness of the ring
+
+        const planetaryDaySymbols = ['☉ SUN', '☽ MON', '♂ TUE', '☿ WED', '♃ THUR', '♀ FRI', '♄ SAT'];
+        const christianDayNames  = ['Dominica', 'Feria II', 'Feria III', 'Feria IV', 'Feria V', 'Feria VI', 'Sabbatum'];
+
+        const midnightMs = new Date(now).setHours(0,0,0,0);
+        const cycleFrac = (now - midnightMs) / 86400000;
+        const sunAngleInRing = hourHandAngle - zodiacRotationOffset;
+        const todayStartAngle = sunAngleInRing - (cycleFrac * daySegAngle);
+        const ringStartAngle = todayStartAngle - (now.getDay() * daySegAngle);
+
+        // Draw the continuous background ring first (Same style as months)
+        ctx.beginPath();
+        ctx.arc(0, 0, weekRingR, 0, 2 * Math.PI);
+        ctx.lineWidth = weekLineWidth;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.stroke();
+
+        for (let i = 0; i < 7; i++) {
+            const weekday = i % 7;
+            const segStart = ringStartAngle + i * daySegAngle;
+            
+            // --- Draw Separator Line (Same style as months) ---
+            ctx.beginPath();
+            // Start at inner edge of ring, end at outer edge
+            ctx.moveTo((weekRingR - weekLineWidth/2) * Math.cos(segStart), (weekRingR - weekLineWidth/2) * Math.sin(segStart));
+            ctx.lineTo((weekRingR + weekLineWidth/2) * Math.cos(segStart), (weekRingR + weekLineWidth/2) * Math.sin(segStart));
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#374151'; // Matching month tick color
+            ctx.stroke();
+
+            // --- Label ---
+            const midAngle = segStart + (daySegAngle / 2);
+            ctx.save();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+
+            if (isChristianWeekMode) {
+                ctx.font = '700 7px sans-serif';
+                drawCurvedText(christianDayNames[weekday], weekRingR, midAngle, 1);
+            } else {
+                ctx.font = '700 7px sans-serif';
+                drawCurvedText(planetaryDaySymbols[weekday], weekRingR, midAngle, 1);
+            }
+            ctx.restore();
+        }
+
         // --- DRAW MONTHS RING (Now the Moon track) ---
-        const monthsRingR = effectiveRadius + 12;
+        const monthsRingR = effectiveRadius + 27;
         
         ctx.beginPath();
         ctx.arc(0, 0, monthsRingR, 0, 2 * Math.PI);
@@ -2085,12 +2160,12 @@
             if (i === 11) nextAngle = -((365 - 80) / 365) * 2 * Math.PI + Math.PI;
             let midAngle = startAngle + (nextAngle - startAngle) / 2;
             
-            ctx.font = '600 6px sans-serif'; 
+            ctx.font = '700 7px sans-serif'; 
             drawCurvedText(monthNames[i], monthsRingR, midAngle, 1);
         }
 
         // --- DRAW SEASON RING (Sun Track) ---
-        const seasonRingR = effectiveRadius + 27;
+        const seasonRingR = effectiveRadius + 44;
 
         if (isSeasonLabelMode) {
             const ringWidth = 8;
@@ -2132,7 +2207,7 @@
         }
 
         // ---- DRAW ZODIAC RING ----
-        const zodiacRingR = effectiveRadius + 44;
+        const zodiacRingR = effectiveRadius + 64;
         const zodiacSymbols = ['♈︎', '♉︎', '♊︎', '♋︎', '♌︎', '♍︎', '♎︎', '♏︎', '♐︎', '♑︎', '♒︎', '♓︎'];
         const zodiacNames = ['ARIES', 'TAURUS', 'GEMINI', 'CANCER', 'LEO', 'VIRGO', 'LIBRA', 'SCORPIO', 'SAGITTARIUS', 'CAPRICORN', 'AQUARIUS', 'PISCES'];
 
@@ -2195,7 +2270,7 @@
 
         // --- DRAW LITURGICAL RING ---
         if (isLiturgicalMode) {
-            const litRingR = effectiveRadius + 64; 
+            const litRingR = effectiveRadius + 84; 
             const litWidth = 14;
             const litGap = 0.045; 
             
