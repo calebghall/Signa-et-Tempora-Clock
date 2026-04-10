@@ -627,7 +627,7 @@
             <p class="info-text">The movement of the Moon in relation to the Ecliptic and Horizon is also shown, as well as her Phases. The visible Planets can also be displayed in their course through the Ecliptic, including both their prograde and retrograde motions.
             </p>
             <div class="info-row"><span>"[Where were you w]hen the morning stars praised me together, and all the sons of God made a joyful melody? ... Shalt thou be able to join together the shining stars the Pleiades, or canst thou stop the turning about of Arcturus?  Canst thou bring forth the day star in its time, and make the evening star to rise upon the children of the earth?"</span><span>Job 38:7, 31-32</span></div>
-            <p class="info-text">The Zodiac also follows its daily course, and the position of the Sun, Moon, and Planets in relation to the Zodiac is also shown. Over the course of the year, the Sun is shown progressing through the Seasons, both natural and liturgical.
+            <p class="info-text">The Zodiac also follows its daily course, and the position of the Sun, Moon, and Planets in relation to the Zodiac is also shown. Different Zodiac configuration options are available. Over the course of the year, the Sun is shown progressing through the Seasons, both natural and liturgical.
             </p>
             <p class="info-text">Device location data is processed in the web browser. No information is saved on an external server.
             </p>
@@ -650,6 +650,8 @@
             <input type="range" min="-100" max="100" value="0" class="speed-range" id="speedSlider">
             <button class="reset-btn" onclick="resetSpeed()" style="width:100%; margin-top: 6px;">Reset to Now</button>
         </div>
+        <!-- CLOCK FACE -->
+        <p style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 8px 0 4px;">Clock Face</p>
         <div class="toggle-wrapper">
             <span class="toggle-label left active" id="labelFixed" onclick="setMode(false)">Fixed Horizon</span>
             <label class="switch">
@@ -674,53 +676,70 @@
             </label>
             <span class="toggle-label right" id="labelPlanetsOn" onclick="setPlanetsMode(true)">Show Planets</span>
         </div>
+
+        <!-- SEASONS -->
+        <p style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 16px 0 4px;">Seasons</p>
         <div class="toggle-wrapper">
-            <span class="toggle-label left active" id="labelZodiacIcon" onclick="setZodiacMode(false)">Zodiac Icons</span>
-            <label class="switch">
-                <input type="checkbox" id="zodiacToggle" onchange="toggleZodiacMode()">
-                <span class="slider"></span>
-            </label>
-            <span class="toggle-label right" id="labelZodiacText" onclick="setZodiacMode(true)">Zodiac Text</span>
-        </div>
-        <div class="toggle-wrapper">
-            <span class="toggle-label left active" id="labelZodiacAstro" onclick="setZodiacNormMode(false)">Normalized Zodiac Ring</span>
-            <label class="switch">
-                <input type="checkbox" id="zodiacNormToggle" onchange="toggleZodiacNormMode()">
-                <span class="slider"></span>
-            </label>
-            <span class="toggle-label right" id="labelZodiacNorm" onclick="setZodiacNormMode(true)">Variable Zodiac Boundaries</span>
-        </div>
-        <div class="toggle-wrapper">
-            <span class="toggle-label left active" id="labelSeasonOff" onclick="setSeasonMode(false)">Hide Natural Seasons Ring</span>
+            <span class="toggle-label left active" id="labelSeasonOff" onclick="setSeasonMode(false)">Hide Natural Seasons</span>
             <label class="switch">
                 <input type="checkbox" id="seasonToggle" onchange="toggleSeasonMode()">
                 <span class="slider"></span>
             </label>
-            <span class="toggle-label right" id="labelSeasonOn" onclick="setSeasonMode(true)">Show Natural Seasons Ring</span>
+            <span class="toggle-label right" id="labelSeasonOn" onclick="setSeasonMode(true)">Show Natural Seasons</span>
         </div>
         <div class="toggle-wrapper">
-            <span class="toggle-label left active" id="labelSeasonTextOff" onclick="setSeasonTextMode(false)">Hide Natural Seasons Text</span>
+            <span class="toggle-label left active" id="labelSeasonTextOff" onclick="setSeasonTextMode(false)">Hide Season Text</span>
             <label class="switch">
                 <input type="checkbox" id="seasonTextToggle" onchange="toggleSeasonTextMode()">
                 <span class="slider"></span>
             </label>
-            <span class="toggle-label right" id="labelSeasonTextOn" onclick="setSeasonTextMode(true)">Show Natural Seasons Text</span>
+            <span class="toggle-label right" id="labelSeasonTextOn" onclick="setSeasonTextMode(true)">Show Season Text</span>
+        </div>
+
+        <!-- ZODIAC -->
+        <p style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 16px 0 4px;">Zodiac</p>
+        <div class="toggle-wrapper">
+            <span class="toggle-label left active" id="labelZodiacIcon" onclick="setZodiacMode(false)">Icons</span>
+            <label class="switch">
+                <input type="checkbox" id="zodiacToggle" onchange="toggleZodiacMode()">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label right" id="labelZodiacText" onclick="setZodiacMode(true)">Text</span>
         </div>
         <div class="toggle-wrapper">
-            <span class="toggle-label left active" id="labelLiturgicalOff" onclick="setLiturgicalMode(false)">Hide Liturgical Seasons Ring</span>
+            <span class="toggle-label left active" id="labelZodiacTropical" onclick="setZodiacSiderealMode(false)">Tropical</span>
+            <label class="switch">
+                <input type="checkbox" id="zodiacSiderealToggle" onchange="toggleZodiacSiderealMode()">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label right" id="labelZodiacSidereal" onclick="setZodiacSiderealMode(true)">Sidereal</span>
+        </div>
+        <div class="toggle-wrapper">
+            <span class="toggle-label left active" id="labelZodiacAstro" onclick="setZodiacNormMode(false)">Even 30°</span>
+            <label class="switch">
+                <input type="checkbox" id="zodiacNormToggle" onchange="toggleZodiacNormMode()">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label right" id="labelZodiacNorm" onclick="setZodiacNormMode(true)">Variable</span>
+        </div>
+
+        <!-- LITURGICAL -->
+        <p style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 16px 0 4px;">Liturgical</p>
+        <div class="toggle-wrapper">
+            <span class="toggle-label left active" id="labelLiturgicalOff" onclick="setLiturgicalMode(false)">Hide Liturgical Seasons</span>
             <label class="switch">
                 <input type="checkbox" id="liturgicalToggle" onchange="toggleLiturgicalMode()" checked>
                 <span class="slider"></span>
             </label>
-            <span class="toggle-label right" id="labelLiturgicalOn" onclick="setLiturgicalMode(true)">Show Liturgical Seasons Ring</span>
+            <span class="toggle-label right" id="labelLiturgicalOn" onclick="setLiturgicalMode(true)">Show Liturgical Seasons</span>
         </div>
         <div class="toggle-wrapper">
-            <span class="toggle-label left active" id="labelLitTextOff" onclick="setLiturgicalTextMode(false)">Hide Liturgical Season Text</span>
+            <span class="toggle-label left active" id="labelLitTextOff" onclick="setLiturgicalTextMode(false)">Hide Season Text</span>
             <label class="switch">
                 <input type="checkbox" id="litTextToggle" onchange="toggleLiturgicalTextMode()" checked>
                 <span class="slider"></span>
             </label>
-            <span class="toggle-label right" id="labelLitTextOn" onclick="setLiturgicalTextMode(true)">Show Liturgical Season Text</span>
+            <span class="toggle-label right" id="labelLitTextOn" onclick="setLiturgicalTextMode(true)">Show Season Text</span>
         </div>
         <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
             <button class="reset-btn" onclick="refreshApp()" style="width:100%; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #f87171;">
@@ -1010,6 +1029,7 @@
     let isPlanetsMode = false;
     let isZodiacTextMode = false;
     let isZodiacNormMode = false;
+    let isZodiacSiderealMode = false;
     let isSeasonLabelMode = true;
     let isSeasonTextMode = true;
     let isLiturgicalMode = true;
@@ -1086,6 +1106,12 @@
             isZodiacNormMode = localStorage.getItem('uh_zodNormMode') === 'true';
             document.getElementById('zodiacNormToggle').checked = isZodiacNormMode;
         }
+        if (localStorage.getItem('uh_zodSiderealMode') !== null) {
+            isZodiacSiderealMode = localStorage.getItem('uh_zodSiderealMode') === 'true';
+            document.getElementById('zodiacSiderealToggle').checked = isZodiacSiderealMode;
+        } else {
+            document.getElementById('zodiacSiderealToggle').checked = false;
+        }
         if (localStorage.getItem('uh_seasMode') !== null) {
             isSeasonLabelMode = localStorage.getItem('uh_seasMode') === 'true';
             document.getElementById('seasonToggle').checked = isSeasonLabelMode;
@@ -1127,6 +1153,9 @@
 
         document.getElementById('labelZodiacAstro').classList.toggle('active', !isZodiacNormMode);
         document.getElementById('labelZodiacNorm').classList.toggle('active', isZodiacNormMode);
+
+        document.getElementById('labelZodiacTropical').classList.toggle('active', !isZodiacSiderealMode);
+        document.getElementById('labelZodiacSidereal').classList.toggle('active', isZodiacSiderealMode);
 
         document.getElementById('labelSeasonOff').classList.toggle('active', !isSeasonLabelMode);
         document.getElementById('labelSeasonOn').classList.toggle('active', isSeasonLabelMode);
@@ -1547,6 +1576,13 @@
     }
     function setZodiacNormMode(isOn) { document.getElementById('zodiacNormToggle').checked = isOn; toggleZodiacNormMode(); }
     
+    function toggleZodiacSiderealMode() {
+        isZodiacSiderealMode = document.getElementById('zodiacSiderealToggle').checked;
+        localStorage.setItem('uh_zodSiderealMode', isZodiacSiderealMode);
+        updateToggleLabels();
+    }
+    function setZodiacSiderealMode(isOn) { document.getElementById('zodiacSiderealToggle').checked = isOn; toggleZodiacSiderealMode(); }
+
     function toggleSeasonMode() {
         isSeasonLabelMode = document.getElementById('seasonToggle').checked;
         localStorage.setItem('uh_seasMode', isSeasonLabelMode);
@@ -2211,21 +2247,22 @@
         const zodiacSymbols = ['♈︎', '♉︎', '♊︎', '♋︎', '♌︎', '♍︎', '♎︎', '♏︎', '♐︎', '♑︎', '♒︎', '♓︎'];
         const zodiacNames = ['ARIES', 'TAURUS', 'GEMINI', 'CANCER', 'LEO', 'VIRGO', 'LIBRA', 'SCORPIO', 'SAGITTARIUS', 'CAPRICORN', 'AQUARIUS', 'PISCES'];
 
-        // 1. GET SIMULATED YEAR & PRECESSION
-        const currentYear = now.getUTCFullYear();
-        const yearsSince2000 = currentYear - 2000;
-        const precessionOffset = yearsSince2000 * 0.0139696; 
-        
-        // 2. DEFINE BOUNDARIES 
-        const zodiacToggleEl = document.getElementById('zodiacNormToggle');
-        const isAstroMode = zodiacToggleEl ? zodiacToggleEl.checked : false;
-        
-        // IAU J2000 Boundaries (Ophiuchus split at 253.5 midpoint)
-        const iauBoundaries = [28.5, 53.5, 90.0, 118.0, 137.5, 174.0, 217.5, 241.0, 253.5, 298.5, 327.0, 348.5];
+        // precessionCalc: degrees of precession from J2000 (Lahiri approximation)
+        const J2000 = new Date('2000-01-01T12:00:00Z');
+        const yearsSinceJ2000 = (now - J2000) / (365.25 * 24 * 3600 * 1000);
+        const precessionCalc = 24 + yearsSinceJ2000 * 0.01396;
+
+        // Tropical: Aries = 0° (vernal equinox), no correction needed
+        // Sidereal: shift all boundaries by precessionCalc
+        const siderealOffset = isZodiacSiderealMode ? precessionCalc : 0;
+
+        const iauBoundaries  = [28.5, 53.5, 90.0, 118.0, 137.5, 174.0, 217.5, 241.0, 253.5, 298.5, 327.0, 348.5];
         const evenBoundaries = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
-        
-        const baseSet = isAstroMode ? iauBoundaries : evenBoundaries;
-        const currentBoundaries = baseSet.map(deg => (deg + precessionOffset) % 360);
+
+        const baseSet = isZodiacNormMode ? iauBoundaries : evenBoundaries;
+
+        // Apply sidereal offset — in sidereal mode the whole ring shifts by precessionCalc
+        const currentBoundaries = baseSet.map(deg => (deg + siderealOffset) % 360);
         
         // 3. DRAW THE TRACK BACKGROUND
         ctx.beginPath();
