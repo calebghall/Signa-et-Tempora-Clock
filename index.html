@@ -478,6 +478,13 @@
             -webkit-user-select: none;
         }
 
+        #privacyModal {
+            cursor: pointer;
+        }
+        #privacyModal > div {
+            cursor: default;
+        }
+
          /* Responsive adjustments for mobile */
          @media (max-width: 500px) {
              body {
@@ -624,19 +631,17 @@
         <div class="info-list">
             <div class="info-row"><span>"And God said: Let there be lights made in the firmament of heaven, to divide the day and the night, and let them be for signs, and for seasons, and for days and years:"</span><span>Gen 1:14</span></div>
             <p class="info-text">
-            This clock measures time using 24 unequal hours each solar day. The hours are unequal in the sense that in summer, ticks above the horizon represent more time than ticks below, while the opposite is true for winter. Daytime hours of the same day, as well as nighttime hours of the same night, are equal; but daytime hours and nighttime hours of the same day are only of equal length on the Equinoxes. 
+            S&T Clock (pronounced <i>"set"</i> as in <i><b>S</b>igna <b>e</b>t <b>T</b>empora</i>) measures time using 24 unequal hours each solar day. The hours are unequal in the sense that in summer, the 12 hours above the horizon represent more time than the 12 hours below, while the opposite is true for winter. Daytime hours of the same day, as well as nighttime hours of the same night, are equal; but daytime hours and nighttime hours of the same day are only of equal length on the Equinoxes. 
             </p>
             <div class="info-row"><span>"The heavens shew forth the glory of God, and the firmament declareth the work of his hands."</span><span>Ps 19:1</span></div>
             <p class="info-text">
             The horizon of the clockface represents the Horizon of the selected location, and the rings surrounding the clock represent the Ecliptic. Each day the Sun indicator crosses the Eastern Horizon (sunrise), rises to the top of the clockface (culmination), passes under the Western Horizon (sunset), and traverses underneath the horizon line to return to the East (night). 
             </p>
             <div class="info-row"><span>He hath set his tabernacle in the sun: and he, as a bridegroom coming out of his bride chamber, Hath rejoiced as a giant to run the way:  His going out is from the end of heaven, And his circuit even to the end thereof: and there is no one that can hide himself from his heat.</span><span>Ps 19:6-7</span></div>
-            <p class="info-text">The movement of the Moon in relation to the Ecliptic and Horizon is also shown, as well as her Phases. The visible Planets can also be displayed in their course through the Ecliptic, including both their prograde and retrograde motions.
+            <p class="info-text">The movement of the Moon in relation to the Ecliptic and Horizon is also shown, as well as the Lunar Phases. The visible Planets can also be displayed in relation to the Ecliptic, showing both their prograde and retrograde motions.
             </p>
             <div class="info-row"><span>"[Where were you w]hen the morning stars praised me together, and all the sons of God made a joyful melody? ... Shalt thou be able to join together the shining stars the Pleiades, or canst thou stop the turning about of Arcturus?  Canst thou bring forth the day star in its time, and make the evening star to rise upon the children of the earth?"</span><span>Job 38:7, 31-32</span></div>
             <p class="info-text">The Zodiac also follows its daily course, and the position of the Sun, Moon, and Planets in relation to the Zodiac is also shown. Different Zodiac configuration options are available. Over the course of the year, the Sun is shown progressing through the Seasons, both natural and liturgical.
-            </p>
-            <p class="info-text">Device location data is processed in the web browser. No information is saved on an external server.
             </p>
         </div>
     </div>
@@ -754,7 +759,104 @@
                 Update & Refresh App
             </button>
             <p style="font-size: 14px; color: var(--text-muted); margin-top: 8px; text-align: center;">Clears cache and reloads from server</p>
+            <br>
+            <button class="reset-btn" onclick="deleteUserData()" style="width:100%; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #f87171;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+                Delete Saved Data
+            </button>
+            <p style="font-size: 14px; color: var(--text-muted); margin-top: 8px; text-align: center;">Removes locally saved data from your device</p>
         </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer style="text-align: center; margin-top: 16px; padding-bottom: 8px;">
+    <button onclick="document.getElementById('privacyModal').style.display='flex'"
+        style="background: none; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; text-decoration: underline; font-family: inherit; padding: 8px;">
+        Privacy Information
+    </button>
+</footer>
+
+<!-- Privacy Modal -->
+<div id="privacyModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:var(--bg-widget); border-radius:24px; max-width:560px; width:100%; max-height:85vh; overflow-y:auto; padding:36px; position:relative; box-shadow: 0 30px 60px rgba(0,0,0,0.5);">
+        
+        <!-- Close button -->
+        <button onclick="document.getElementById('privacyModal').style.display='none'"
+            style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.08); border:none; color:var(--text-main); width:36px; height:36px; border-radius:10px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; font-family:inherit;">
+            ✕
+        </button>
+
+        <h2 style="margin:0 0 4px; font-size:22px; color:var(--text-main);">Privacy Information</h2>
+        <p style="margin:0 0 24px; font-size:13px; color:var(--text-muted);">Last Updated: 2026-04-11</p>
+
+        <section style="margin-bottom:24px;">
+            <h3 style="font-size:15px; color:var(--text-main); margin:0 0 8px;">1. Website</h3>
+            <p style="font-size:14px; color:var(--text-muted); line-height:1.6; margin:0 0 8px;">Signa et Tempora Clock (S&amp;T Clock) by Caleb G. Hall</p>
+            <a href="https://github.com/calebghall/Signa-et-Tempora-Clock" target="_blank" rel="noopener"
+                style="font-size:14px; color:var(--accent-day); line-height:1.6;">
+                github.com/calebghall/Signa-et-Tempora-Clock
+            </a>
+        </section>
+
+        <section style="margin-bottom:24px;">
+            <h3 style="font-size:15px; color:var(--text-main); margin:0 0 12px;">2. Types of Data Collected</h3>
+            <div style="background:rgba(0,0,0,0.2); border-radius:12px; padding:16px; margin-bottom:10px;">
+                <p style="font-size:13px; font-weight:600; color:var(--text-main); margin:0 0 6px;">a. Technical Log Data (GitHub)</p>
+                <p style="font-size:13px; color:var(--text-muted); line-height:1.6; margin:0 0 8px;">S&amp;T Clock is hosted as a static GitHub Pages site. When you visit this site, GitHub may collect User Personal Information, including logs of visitor IP addresses, to comply with legal obligations, and to maintain the security and integrity of their Service and this Website.</p>
+                <p style="font-size:13px; color:var(--text-muted); line-height:1.6; margin:0 0 8px;"><strong style="color:var(--text-main);">What is collected:</strong> Data about your interactions with GitHub Services and S&T Clock, such as IP address, device information, session details, date and time of requests, device type and ID, operating system and application version, and data about your Website interactions including referring site, pages viewed, and links clicked.</p>
+                <p style="font-size:13px; color:var(--text-muted); line-height:1.6; margin:0 0 8px;"><strong style="color:var(--text-main);">Purpose:</strong> GitHub Business Operations, Inference, Safety and Security, Service Provision, Troubleshooting, Ongoing Service Performance, Complying with and resolving legal obligations, Delivering Professional Services, Improving Professional Services</p>
+                <p style="font-size:13px; color:var(--text-muted); line-height:1.6; margin:0;"><strong style="color:var(--text-main);">Relationship:</strong> GitHub acts as a Data Processor on behalf of S&amp;T Clock. For more information, including GDPR and US State specific information, please see the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener" style="color:var(--accent-day);">GitHub Privacy Statement</a>.</p>
+            </div>
+            <div style="background:rgba(0,0,0,0.2); border-radius:12px; padding:16px;">
+                <p style="font-size:13px; font-weight:600; color:var(--text-main); margin:0 0 6px;">b. Location Information</p>
+                <p style="font-size:13px; color:var(--text-muted); line-height:1.6; margin:0 0 8px;">This website allows you to set your location to calculate astronomical data (such as sunrise, sunset, and moon phases). You can provide this in three ways:</p>
+                <ul style="font-size:13px; color:var(--text-muted); line-height:1.8; margin:0 0 8px; padding-left:20px;">
+                    <li><strong style="color:var(--text-main);">Browser Geolocation:</strong> If you choose "Share Location," the site uses your browser's Geolocation API. This triggers a permission prompt from your browser.</li>
+                    <li><strong style="color:var(--text-main);">Manual Entry:</strong> You may manually enter a City location or coordinates.</li>
+                    <li><strong style="color:var(--text-main);">Inference:</strong> Your general regional location is inferred by your browser's time zone settings. The major city associated with your time zone will be saved as your location (eg, US Central Time = Chicago).</li>
+        </section>
+
+        <section style="margin-bottom:24px;">
+            <h3 style="font-size:15px; color:var(--text-main); margin:0 0 8px;">3. Local Storage (Persistent Settings)</h3>
+            <p style="font-size:13px; color:var(--text-muted); line-height:1.6; margin:0 0 8px;">This site uses <code style="background:rgba(255,255,255,0.08); padding:1px 5px; border-radius:4px; font-size:12px;">localStorage</code>, a standard web technology that allows us to store data locally on your own device.</p>
+            <p style="font-size:13px; color:var(--text-muted); line-height:1.6; margin:0 0 8px;"><strong style="color:var(--text-main);">What is stored:</strong> If you choose to save your settings, your location coordinates and/or city name are stored so that S&amp;T Clock remembers your preferences the next time you access this site.</p>
+            <p style="font-size:13px; color:var(--text-muted); line-height:1.6; margin:0;"><strong style="color:var(--text-main);">Your Control:</strong> This data stays on your device indefinitely until you manually clear your browser's cache/site data or use the "Clear Settings" feature within the app. This data cannot be accessed, seen, or deleted from any other system because it never leaves your device.</p>
+        </section>
+
+        <section style="margin-bottom:24px;">
+            <h3 style="font-size:15px; color:var(--text-main); margin:0 0 8px;">4. Cookies</h3>
+            <p style="font-size:13px; color:var(--text-muted); line-height:1.6; margin:0;">This website does not use cookies or third-party analytics.</p>
+        </section>
+
+        <section style="margin-bottom:24px;">
+            <h3 style="font-size:15px; color:var(--text-main); margin:0 0 8px;">5. Data Retention</h3>
+            <p style="font-size:13px; color:var(--text-muted); line-height:1.6; margin:0;">Because your location and settings data is not stored remotely, there is no "retention" period. Technical logs managed by GitHub are subject to GitHub's own retention policies for security logs.</p>
+        </section>
+
+        <section>
+            <h3 style="font-size:15px; color:var(--text-main); margin:0 0 8px;">6. Your Rights</h3>
+            <p style="font-size:13px; color:var(--text-muted); line-height:1.6; margin:0;">Depending on the jurisdiction, you may have the right to access, rectify, or erase your personal data, the right to restrict or object to processing, the right to withdraw consent, and the right to file a complaint with the relevant authorities. Since S&amp;T Clock does not store any of your data remotely, you are in full control of deleting the localStorage data in the settings menu. For requests regarding technical logs, you may contact GitHub for additional information.</p>
+        </section>
+
+        <section>
+            <br><br>
+            <button class="reset-btn" onclick="deleteUserData()" style="width:100%; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #f87171;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+                Delete Saved Data
+            </button>
+        </section>
+
     </div>
 </div>
 
@@ -1079,6 +1181,13 @@
 
     // 3. Force reload ignoring browser cache (standard refresh)
         window.location.reload(true);
+    }
+
+    function deleteUserData() {
+        localStorage.clear();
+        sessionStorage.clear();
+
+        window.location.reload();
     }
 
 
@@ -2596,6 +2705,16 @@
     window.onload = () => {
         initLocation();
     };
+
+    // Close privacy modal on backdrop click
+    document.getElementById('privacyModal').addEventListener('click', function(e) {
+        if (e.target === this) this.style.display = 'none';
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') document.getElementById('privacyModal').style.display = 'none';
+    });
 
 </script>
 </body>
