@@ -1135,14 +1135,14 @@
 
     // Toggles
     let isProportionalMode = false;
-    let isPlanetsMode = false;
-    let isZodiacTextMode = false;
+    let isPlanetsMode = true;
+    let isZodiacTextMode = true;
     let isZodiacNormMode = false;
-    let isZodiacSiderealMode = false;
+    let isZodiacSiderealMode = true;
     let isSeasonLabelMode = true;
     let isSeasonTextMode = true;
     let isLiturgicalMode = true;
-    let isLiturgicalTextMode = true;
+    let isLiturgicalTextMode = false;
     let isChristianWeekMode = false;
 
 
@@ -1207,34 +1207,44 @@
         if (localStorage.getItem('uh_propMode') !== null) {
             isProportionalMode = localStorage.getItem('uh_propMode') === 'true';
             document.getElementById('modeToggle').checked = isProportionalMode;
+        } else {
+            document.getElementById('modeToggle').checked = false;
         }
         if (localStorage.getItem('uh_planetsMode') !== null) {
             isPlanetsMode = localStorage.getItem('uh_planetsMode') === 'true';
             document.getElementById('planetsToggle').checked = isPlanetsMode;
         } else {
-            document.getElementById('planetsToggle').checked = false;
+            document.getElementById('planetsToggle').checked = true;
         }
         if (localStorage.getItem('uh_zodMode') !== null) {
             isZodiacTextMode = localStorage.getItem('uh_zodMode') === 'true';
             document.getElementById('zodiacToggle').checked = isZodiacTextMode;
+        } else {
+            document.getElementById('zodiacToggle').checked = true;
         }
         if (localStorage.getItem('uh_zodNormMode') !== null) {
             isZodiacNormMode = localStorage.getItem('uh_zodNormMode') === 'true';
             document.getElementById('zodiacNormToggle').checked = isZodiacNormMode;
+        } else {
+            document.getElementById('zodiacNormToggle').checked = false;
         }
         if (localStorage.getItem('uh_zodSiderealMode') !== null) {
             isZodiacSiderealMode = localStorage.getItem('uh_zodSiderealMode') === 'true';
             document.getElementById('zodiacSiderealToggle').checked = isZodiacSiderealMode;
         } else {
-            document.getElementById('zodiacSiderealToggle').checked = false;
+            document.getElementById('zodiacSiderealToggle').checked = true;
         }
         if (localStorage.getItem('uh_seasMode') !== null) {
             isSeasonLabelMode = localStorage.getItem('uh_seasMode') === 'true';
             document.getElementById('seasonToggle').checked = isSeasonLabelMode;
+        } else {
+            document.getElementById('seasonToggle').checked = true;
         }
         if (localStorage.getItem('uh_seasonTextMode') !== null) {
             isSeasonTextMode = localStorage.getItem('uh_seasonTextMode') === 'true';
             document.getElementById('seasonTextToggle').checked = isSeasonTextMode;
+        } else {
+            document.getElementById('seasonTextToggle').checked = true;
         }
         if (localStorage.getItem('uh_litMode') !== null) {
             isLiturgicalMode = localStorage.getItem('uh_litMode') === 'true';
@@ -1246,7 +1256,7 @@
             isLiturgicalTextMode = localStorage.getItem('uh_litTextMode') === 'true';
             document.getElementById('litTextToggle').checked = isLiturgicalTextMode;
         } else {
-            document.getElementById('litTextToggle').checked = true;
+            document.getElementById('litTextToggle').checked = false;
         }
         if (localStorage.getItem('uh_weekMode') !== null) {
             isChristianWeekMode = localStorage.getItem('uh_weekMode') === 'true';
