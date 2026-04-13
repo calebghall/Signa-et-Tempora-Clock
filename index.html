@@ -2457,35 +2457,37 @@
             const litSegments = getLiturgicalSegments(now);
             
             for (let seg of litSegments) {
-                let startAngle = ((seg.start - 80) / daysInYear) * 2 * Math.PI + Math.PI;
-                let endAngle = ((seg.end - 80) / daysInYear) * 2 * Math.PI + Math.PI;
-                
-                if (endAngle < startAngle) {
-                    endAngle += 2 * Math.PI;
+                let startAngle = -((seg.start - 80) / daysInYear) * 2 * Math.PI + Math.PI;
+                let endAngle   = -((seg.end   - 80) / daysInYear) * 2 * Math.PI + Math.PI;
+            
+                // In negated space, start > end, so arc goes clockwise (anticlockwise=false)
+                // Handle year wraparound
+                if (startAngle < endAngle) {
+                    startAngle += 2 * Math.PI;
                 }
-                
-                let drawStart = startAngle + litGap;
-                let drawEnd = endAngle - litGap;
-                
-                if (drawStart >= drawEnd) {
+            
+                let drawStart = startAngle - litGap;
+                let drawEnd   = endAngle   + litGap;
+            
+                if (drawEnd >= drawStart) {
                     drawStart = startAngle;
-                    drawEnd = endAngle;
+                    drawEnd   = endAngle;
                 }
-                
+            
                 ctx.beginPath();
-                ctx.arc(0, 0, litRingR, drawStart, drawEnd);
+                ctx.arc(0, 0, litRingR, drawEnd, drawStart); // swapped: end→start draws reversed arc
                 ctx.lineCap = 'round';
                 ctx.lineWidth = litWidth;
                 ctx.strokeStyle = seg.color;
                 ctx.stroke();
-
+            
                 if (isLiturgicalTextMode) {
-                    let midAngle = startAngle + (endAngle - startAngle) / 2;
+                    const midAngle = endAngle + (startAngle - endAngle) / 2;
                     ctx.fillStyle = seg.textColor;
-                    
+            
                     let segDays = seg.end - seg.start;
-                    if (segDays < 0) segDays += daysInYear; 
-
+                    if (segDays < 0) segDays += daysInYear;
+            
                     if (segDays > 14) {
                         ctx.font = '700 10px -apple-system, sans-serif';
                         drawCurvedText(seg.text, litRingR, midAngle, 1.5);
