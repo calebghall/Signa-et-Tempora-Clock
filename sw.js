@@ -1,8 +1,9 @@
-const CACHE_NAME = 's&t-clock-v1'; 
+const CACHE_NAME = 's&t-clock-v1.1'; 
 const CACHE_ASSETS = [
     './',
     'index.html',
-    'js/lib/tz-lookup/tz.js' 
+    'js/lib/tz.js',
+    'js/lib/astronomy.browser.min.js'
 ];
 
 // SW saves cached version
