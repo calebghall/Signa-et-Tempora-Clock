@@ -1,0 +1,9 @@
+{
+  "name": "Signa-et-Tempora-Clock",
+  "scripts": {
+    "postinstall": "cp node_modules/@photostructure/tz-lookup/tz.js js/lib/tz.js"
+  },
+  "dependencies": {
+    "@photostructure/tz-lookup": "^11.5.0"
+  }
+}

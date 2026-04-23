@@ -1,4 +1,0 @@
-[submodule "js/lib/tz-lookup"]
-	path = js/lib/tz-lookup
-	url = https://github.com/photostructure/tz-lookup.git
-	branch = main
