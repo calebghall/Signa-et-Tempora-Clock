@@ -2512,7 +2512,7 @@
 
         // Draws one zodiac ring at the given radius with the given boundary set and offset
         // (offset = 0 for Tropical, offset = precessionCalc for Sidereal)
-        function drawZodiacRing(ringR, boundarySet, offsetDeg, trackAlpha, lineWidth, textFontSize, symbolFontSize, textSpacing) {
+        function drawZodiacRing(ringR, boundarySet, offsetDeg, trackAlpha, lineWidth, textFontSize, symbolFontSize, textSpacing, trackColor = '255, 255, 255', drawStars) {
             const tickWidth = (lineWidth-1)/2;
             const boundaries = boundarySet.map(deg => (deg + offsetDeg) % 360);
 
@@ -2520,8 +2520,34 @@
             ctx.beginPath();
             ctx.arc(0, 0, ringR, 0, 2 * Math.PI);
             ctx.lineWidth = lineWidth;
-            ctx.strokeStyle = `rgba(255, 255, 255, ${trackAlpha})`;
+            ctx.strokeStyle = `rgba(${trackColor}, ${trackAlpha})`;
             ctx.stroke();
+
+            // DRAW STARS scattered along the ring track (sidereal only)
+            if (drawStars) {
+                const starCount = 288; // 4 per sign
+                for (let s = 0; s < starCount; s++) {
+                    // Deterministic pseudo-random from index — no flicker
+                    // FIX: Added Math.abs() to prevent negative fractional values
+                    const rand1 = Math.abs((Math.sin(s * 127.1) * 43758.5453) % 1);
+                    const rand2 = Math.abs((Math.sin(s * 311.7) * 43758.5453) % 1);
+                    const rand3 = Math.abs((Math.sin(s * 191.3) * 43758.5453) % 1);
+
+                    const starAngle = rand1 * 2 * Math.PI;
+                    const radialOffset = (rand2 - 0.5) * (lineWidth * 0.7); // stay within track width
+                    const starR = ringR + radialOffset;
+                    const starSize = 0.3 + rand3 * 1.2; // 
+                    const starAlpha = 0.02 + rand3 * 0.3; // 
+
+                    const sx = starR * Math.cos(starAngle);
+                    const sy = starR * Math.sin(starAngle);
+
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, starSize, 0, 2 * Math.PI);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${starAlpha})`;
+                    ctx.fill();
+                }
+            }
 
             // DRAW THE SIGNS AND DIVIDERS
             ctx.fillStyle = '#6b7280';
@@ -2554,15 +2580,17 @@
                     drawCurvedText(zodiacSymbols[i], ringR, midAngle, 0);
                 }
             }
+
+
         }
 
         if (isExpandedMode) {
             // Inner ring: Sidereal (boundaries shifted by precession from J2000; respects Even 30°/Variable toggle)
             const siderealBoundarySet = isZodiacNormMode ? iauBoundaries : evenBoundaries;
-            drawZodiacRing(siderealZodiacRingR, siderealBoundarySet, precessionCalc, 0.025, 12, 11, 13, 1);
+            drawZodiacRing(siderealZodiacRingR, siderealBoundarySet, precessionCalc, 0.08, 12, 11, 13, 1, '251, 191, 36', drawStars = true);
 
             // Outer ring: Tropical (Aries = 0° at the vernal equinox, always even 30° — unaffected by the toggle)
-            drawZodiacRing(tropicalZodiacRingR, evenBoundaries, 0, 0.03, 12, 11, 13, 1);
+            drawZodiacRing(tropicalZodiacRingR, evenBoundaries, 0, 0.05, 12, 11, 13, 1);
         } else {
             // Single ring, toggled between Tropical (offset 0) and Sidereal (precession offset)
             const boundarySet = isZodiacNormMode ? iauBoundaries : evenBoundaries;
