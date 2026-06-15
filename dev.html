@@ -653,22 +653,32 @@
                 <span class="date-display" id="dateDisplay">Real Time</span>
                 <input type="date" id="jumpDateInput" class="date-input" onchange="handleJumpDate()" title="Jump to exact date">
             </div>
-            <div class="speed-labels">
-                <span>Rewind</span>
-                <span>Speed Adjust</span>
-                <span>Fast Fwd</span>
+
+            <div class="speed-labels" style="margin-bottom: -6px; margin-top: 8px;">
+                <span style="font-size: 11px; text-transform: uppercase;">Time Increment:</span>
+                <span id="incrementLabel" style="color: var(--accent-day); font-weight: 700;">1 Second</span>
             </div>
-            <!-- Speed slider from -100 to 100 -->
-            <input type="range" min="-100" max="100" value="0" class="speed-range" id="speedSlider">
-            <button class="reset-btn" onclick="resetSpeed()" style="width:100%; margin-top: 6px;">Reset to Now</button>
-            <div style="display:flex; gap:6px; margin-top:10px;">
-                <button class="reset-btn" onclick="skipTime(-30)"  style="flex:1; padding:8px 4px; font-size:13px;">−Mo</button>
-                <button class="reset-btn" onclick="skipTime(-7)"   style="flex:1; padding:8px 4px; font-size:13px;">−Wk</button>
-                <button class="reset-btn" onclick="skipTime(-1)"   style="flex:1; padding:8px 4px; font-size:13px;">−Day</button>
-                <button class="reset-btn" onclick="skipTime(1)"    style="flex:1; padding:8px 4px; font-size:13px;">+Day</button>
-                <button class="reset-btn" onclick="skipTime(7)"    style="flex:1; padding:8px 4px; font-size:13px;">+Wk</button>
-                <button class="reset-btn" onclick="skipTime(30)"   style="flex:1; padding:8px 4px; font-size:13px;">+Mo</button>
+            <input type="range" min="0" max="8" value="0" class="speed-range" id="incrementSlider" oninput="updateIncrementLabel()">
+
+            <div style="display:flex; justify-content: space-between; gap:8px; margin-top: 10px;">
+                <button class="icon-btn" onclick="stepTime(-1)" title="Skip Backward" style="flex:1;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                </button>
+                <button class="icon-btn" id="btnRw" onclick="setVCRMode('rw')" title="Rewind" style="flex:1; color: var(--text-muted);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+                </button>
+                <button class="icon-btn" id="btnPlayPause" onclick="togglePlayPause()" title="Play/Pause" style="flex:1; color: var(--text-muted);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </button>
+                <button class="icon-btn" id="btnFf" onclick="setVCRMode('ff')" title="Fast Forward" style="flex:1; color: var(--text-muted);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+                </button>
+                <button class="icon-btn" onclick="stepTime(1)" title="Skip Forward" style="flex:1;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                </button>
             </div>
+
+            <button class="reset-btn" onclick="resetSpeed()" style="width:100%; margin-top: 8px;">Reset to Now</button>
         </div>
         <!-- CLOCK FACE -->
         <p style="font-size: 14px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 8px 0 4px;">Clock Face</p>
@@ -1429,29 +1439,104 @@
         btn.classList.toggle('active');
     }
 
+    // --- MEDIA CONTROL STATE ---
+    const timeIncrements = [
+        { name: "1 Second",  ms: 1000 },
+        { name: "1 Minute",  ms: 60000 },
+        { name: "1 Hour",    ms: 3600000 },
+        { name: "12 Hours",  ms: 43200000 },
+        { name: "1 Day",     ms: 86400000 },
+        { name: "1 Week",    ms: 604800000 },
+        { name: "1 Month",   ms: 2592000000 },
+        { name: "1 Quarter", ms: 7776000000 },
+        { name: "1 Year",    ms: 31536000000 }
+    ];
+    
+    let playMode = 'play'; // 'play', 'paused', 'ff', 'rw'
+    let vcrAccumulator = 0; // Tracks real milliseconds for the "snap" effect
+
+    function updateIncrementLabel() {
+        const slider = document.getElementById('incrementSlider');
+        const label = document.getElementById('incrementLabel');
+        if (!slider || !label) return;
+
+        const val = slider.value;
+        label.innerText = timeIncrements[val].name; 
+    }
+
+    function togglePlayPause() {
+        if (playMode === 'play') {
+            playMode = 'paused';
+        } else {
+            playMode = 'play';
+            document.getElementById('incrementSlider').value = 0; // Reset to 1 Second
+            updateIncrementLabel();
+        }
+        vcrAccumulator = 0;
+        updateButtonUI();
+    }
+
+    function setVCRMode(mode) {
+        const slider = document.getElementById('incrementSlider');
+        
+        if (playMode === mode) {
+            // If already in this mode, bump the speed up one notch
+            let currentVal = parseInt(slider.value, 10);
+            if (currentVal < parseInt(slider.max, 10)) {
+                slider.value = currentVal + 1;
+                updateIncrementLabel();
+            }
+        } else {
+            // Switching to a new mode
+            playMode = mode;
+            // If starting from normal 1-sec speed, automatically bump to 1-min speed
+            if (slider.value == 0) {
+                slider.value = 1;
+                updateIncrementLabel();
+            }
+        }
+        
+        vcrAccumulator = 0; // Reset the accumulator for a clean "snap" on the new speed
+        updateButtonUI();
+    }
+
+    function stepTime(direction) {
+        const val = document.getElementById('incrementSlider').value;
+        const incMs = timeIncrements[val].ms;
+        simulatedTime += direction * incMs;
+        lastUpdate = Date.now();
+    }
+
     function resetSpeed() {
-        document.getElementById('speedSlider').value = 0;
+        document.getElementById('incrementSlider').value = 0;
         document.getElementById('jumpDateInput').value = "";
+        updateIncrementLabel();
+        
         simulatedTime = Date.now(); 
         lastUpdate = Date.now();
+        playMode = 'play'; 
+        vcrAccumulator = 0;
+        updateButtonUI();
     }
 
-    function skipTime(days) {
-        simulatedTime += days * 24 * 60 * 60 * 1000;
-        lastUpdate = Date.now();
-    }
+    function updateButtonUI() {
+        const btnRw = document.getElementById('btnRw');
+        const btnFf = document.getElementById('btnFf');
+        const btnPlayPause = document.getElementById('btnPlayPause');
 
-    function handleJumpDate() {
-        const dateVal = document.getElementById('jumpDateInput').value;
-        if (!dateVal) return;
-        const [y, m, d] = dateVal.split('-');
+        if (btnRw) btnRw.style.color = (playMode === 'rw') ? 'var(--accent-day)' : 'var(--text-muted)';
+        if (btnFf) btnFf.style.color = (playMode === 'ff') ? 'var(--accent-day)' : 'var(--text-muted)';
         
-        const newDate = new Date(simulatedTime);
-        newDate.setFullYear(y, m - 1, d);
-        
-        simulatedTime = newDate.getTime();
-        document.getElementById('speedSlider').value = 0; 
-        lastUpdate = Date.now();
+        if (btnPlayPause) {
+            if (playMode === 'paused') {
+                btnPlayPause.style.color = 'var(--text-muted)';
+                btnPlayPause.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+            } else {
+                // Changed from var(--accent-day) to var(--text-main)
+                btnPlayPause.style.color = (playMode === 'play') ? 'var(--text-main)' : 'var(--text-muted)';
+                btnPlayPause.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+            }
+        }
     }
 
     function toggleMode() {
@@ -1708,14 +1793,34 @@
         const dt = realNow - lastUpdate;
         lastUpdate = realNow;
 
-        const speedVal = parseFloat(document.getElementById('speedSlider').value);
-        let speedMultiplier = 1;
+        const sliderVal = document.getElementById('incrementSlider').value;
+        const incMs = timeIncrements[sliderVal].ms;
         
-        if (speedVal !== 0) {
-            speedMultiplier = Math.sign(speedVal) * Math.pow(1.18, Math.abs(speedVal));
+        // Apply elapsed time only if not paused
+        if (playMode !== 'paused') {
+            if (playMode === 'play') {
+                simulatedTime += dt;
+                vcrAccumulator = 0;
+            } else {
+                const direction = (playMode === 'ff') ? 1 : -1;
+                
+                if (sliderVal >= 4) { 
+                    // SNAP MODE (1 Day or more): Step once per real second
+                    vcrAccumulator += dt;
+                    if (vcrAccumulator >= 1000) {
+                        const ticks = Math.floor(vcrAccumulator / 1000);
+                        vcrAccumulator -= ticks * 1000;
+                        simulatedTime += direction * (ticks * incMs);
+                    }
+                } else {
+                    // SMOOTH MODE (1 Sec, 1 Min, 1 Hr, 12 Hrs): Spin smoothly
+                    const multiplier = (incMs / 1000) * direction;
+                    simulatedTime += dt * multiplier;
+                    vcrAccumulator = 0;
+                }
+            }
         }
 
-        simulatedTime += (dt * speedMultiplier);
         const now = new Date(simulatedTime);
 
         const dateDisplay = document.getElementById('dateDisplay');
@@ -1723,11 +1828,19 @@
             year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'
         });
 
-        if (speedVal === 0) {
+        // "Real Time" only applies if we are playing smoothly at 1x speed, and are currently close to the present
+        const isRealTime = (playMode === 'play' && Math.abs(simulatedTime - Date.now()) < 5000);
+
+        if (isRealTime) {
             dateDisplay.innerText = "Real Time: " + displayStr;
             dateDisplay.style.color = "var(--text-main)";
         } else {
-            dateDisplay.innerText = "Simulating: " + displayStr;
+            const stateStr = (playMode === 'paused') ? "Paused: " : 
+                             (playMode === 'play') ? "Simulating: " : 
+                             (playMode === 'ff') ? `FFwd (${timeIncrements[sliderVal].name}/s): ` : 
+                             `Rewind (${timeIncrements[sliderVal].name}/s): `;
+            
+            dateDisplay.innerText = stateStr + displayStr;
             dateDisplay.style.color = "var(--accent-day)";
         }
         
