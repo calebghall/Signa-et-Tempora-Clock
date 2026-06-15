@@ -2275,23 +2275,23 @@
         // --- MOON RING (separate from months ring) ---
         const moonRingR = monthMoonSeparatorR + (isExpandedMode ? 8 : 10);
 
-        // --- DRAW VENUS RING (inner planet, 2nd from Moon) ---
-        const venusRingR = effectiveRadius + (isExpandedMode ? 52 : 32);
-        if (isExpandedMode) {
-            ctx.beginPath();
-            ctx.arc(0, 0, venusRingR, 0, 2 * Math.PI);
-            ctx.lineWidth = 10;
-            ctx.strokeStyle = 'rgba(52, 211, 153, 0.08)'; // Emerald Green
-            ctx.stroke();
-        }
-
         // --- DRAW MERCURY RING (inner planet, closest to Sun) ---
-        const mercuryRingR = effectiveRadius + (isExpandedMode ? 64 : 40);
+        const mercuryRingR = effectiveRadius + (isExpandedMode ? 52 : 32);
         if (isExpandedMode) {
             ctx.beginPath();
             ctx.arc(0, 0, mercuryRingR, 0, 2 * Math.PI);
             ctx.lineWidth = 10;
             ctx.strokeStyle = 'rgba(192, 132, 252, 0.08)'; // Quicksilver Violet
+            ctx.stroke();
+        }
+
+        // --- DRAW VENUS RING (inner planet, 2nd from Moon) ---
+        const venusRingR = effectiveRadius + (isExpandedMode ? 64 : 40);
+        if (isExpandedMode) {
+            ctx.beginPath();
+            ctx.arc(0, 0, venusRingR, 0, 2 * Math.PI);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'rgba(52, 211, 153, 0.08)'; // Emerald Green
             ctx.stroke();
         }
 
