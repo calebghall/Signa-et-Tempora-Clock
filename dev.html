@@ -661,6 +661,14 @@
             <!-- Speed slider from -100 to 100 -->
             <input type="range" min="-100" max="100" value="0" class="speed-range" id="speedSlider">
             <button class="reset-btn" onclick="resetSpeed()" style="width:100%; margin-top: 6px;">Reset to Now</button>
+            <div style="display:flex; gap:6px; margin-top:10px;">
+                <button class="reset-btn" onclick="skipTime(-30)"  style="flex:1; padding:8px 4px; font-size:13px;">−Mo</button>
+                <button class="reset-btn" onclick="skipTime(-7)"   style="flex:1; padding:8px 4px; font-size:13px;">−Wk</button>
+                <button class="reset-btn" onclick="skipTime(-1)"   style="flex:1; padding:8px 4px; font-size:13px;">−Day</button>
+                <button class="reset-btn" onclick="skipTime(1)"    style="flex:1; padding:8px 4px; font-size:13px;">+Day</button>
+                <button class="reset-btn" onclick="skipTime(7)"    style="flex:1; padding:8px 4px; font-size:13px;">+Wk</button>
+                <button class="reset-btn" onclick="skipTime(30)"   style="flex:1; padding:8px 4px; font-size:13px;">+Mo</button>
+            </div>
         </div>
         <!-- CLOCK FACE -->
         <p style="font-size: 14px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 8px 0 4px;">Clock Face</p>
@@ -874,8 +882,8 @@
 
 <script>
     
-    let currentLat = 35.16;
-    let currentLon = -89.79;
+    let currentLat = null;
+    let currentLon = null;
     let currentTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; 
     
     // Animation and Simulation State
@@ -1047,6 +1055,7 @@
         // so the single-ring Tropical/Sidereal toggle is hidden in favor of a caption.
         document.getElementById('zodiacSiderealWrapper').style.display = isExpandedMode ? 'none' : '';
         document.getElementById('zodiacExpandedCaption').style.display = isExpandedMode ? '' : 'none';
+        document.getElementById('planetsToggleWrapper').style.display = isExpandedMode ? 'none' : '';
 
         document.getElementById('labelSeasonOff').classList.toggle('active', !isSeasonLabelMode);
         document.getElementById('labelSeasonOn').classList.toggle('active', isSeasonLabelMode);
@@ -1097,8 +1106,17 @@
 
     function initLocation() {
         loadSettings();
-        // HARDCODED for preview — Memphis, TN area (35.16, -89.79)
-        setAndSaveLocation('Memphis, TN (preview)', 35.16, -89.79);
+
+        const savedCity = localStorage.getItem('unequalClockCity');
+        const savedLat = localStorage.getItem('unequalClockLat');
+        const savedLon = localStorage.getItem('unequalClockLon');
+
+        if (savedCity && savedLat && savedLon) {
+            setAndSaveLocation(savedCity, parseFloat(savedLat), parseFloat(savedLon));
+            return;
+        }
+
+        useFallbackLocation();
     }
 
     function requestGPSLocation() {
@@ -1414,6 +1432,11 @@
         document.getElementById('speedSlider').value = 0;
         document.getElementById('jumpDateInput').value = "";
         simulatedTime = Date.now(); 
+        lastUpdate = Date.now();
+    }
+
+    function skipTime(days) {
+        simulatedTime += days * 24 * 60 * 60 * 1000;
         lastUpdate = Date.now();
     }
 
@@ -2022,9 +2045,9 @@
         const daysInYear = (now.getUTCFullYear() % 4 === 0 && now.getUTCFullYear() % 100 !== 0) || (now.getUTCFullYear() % 400 === 0) ? 366 : 365;
 
         // --- DAY OF WEEK RING ---
-        const weekRingR = effectiveRadius + (isExpandedMode ? 9 : 14);
+        const weekRingR = effectiveRadius + (isExpandedMode ? 8 : 14);
         const daySegAngle = (2 * Math.PI) / 7;
-        const weekLineWidth = isExpandedMode ? 14 : 18; // Thickness of the ring
+        const weekLineWidth = isExpandedMode ? 12 : 18; // Thickness of the ring
         const weekTickWidth = (weekLineWidth-1)/2
 
         const planetaryDayNames = ['☉ SUN', '☽ MON', '♂ TUE', '☿ WED', '♃ THU', '♀ FRI', '♄ SAT'];
@@ -2071,9 +2094,9 @@
             ctx.restore();
         }
 
-        // --- DRAW MONTHS RING (Now the Moon track) ---
-        const monthsRingR = effectiveRadius + (isExpandedMode ? 21 : 34);
-        const monthLineWidth = isExpandedMode ? 14 : 18;
+        // --- DRAW MONTHS RING ---
+        const monthsRingR = effectiveRadius + (isExpandedMode ? 19 : 34);
+        const monthLineWidth = isExpandedMode ? 12 : 18;
         const monthTickWidth = (monthLineWidth-1)/2
         
         ctx.beginPath();
@@ -2104,8 +2127,20 @@
             drawCurvedText(monthNames[i], monthsRingR, midAngle, 1.5);
         }
 
+        // --- HARD SEPARATOR LINE between months ring and moon ring ---
+        // Mirrors the inner clock face border style
+        const monthMoonSeparatorR = monthsRingR + (monthLineWidth / 2) + 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, monthMoonSeparatorR, 0, 2 * Math.PI);
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#374151';
+        ctx.stroke();
+
+        // --- MOON RING (separate from months ring) ---
+        const moonRingR = monthMoonSeparatorR + (isExpandedMode ? 8 : 10);
+
         // --- DRAW VENUS RING (inner planet, 2nd from Moon) ---
-        const venusRingR = effectiveRadius + 32;
+        const venusRingR = effectiveRadius + (isExpandedMode ? 44 : 32);
         if (isExpandedMode) {
             ctx.beginPath();
             ctx.arc(0, 0, venusRingR, 0, 2 * Math.PI);
@@ -2115,7 +2150,7 @@
         }
 
         // --- DRAW MERCURY RING (inner planet, closest to Sun) ---
-        const mercuryRingR = effectiveRadius + 40;
+        const mercuryRingR = effectiveRadius + (isExpandedMode ? 52 : 40);
         if (isExpandedMode) {
             ctx.beginPath();
             ctx.arc(0, 0, mercuryRingR, 0, 2 * Math.PI);
@@ -2125,7 +2160,7 @@
         }
 
         // --- DRAW SEASON RING (Sun Track) ---
-        const seasonRingR = effectiveRadius + (isExpandedMode ? 48 : 54);
+        const seasonRingR = effectiveRadius + (isExpandedMode ? 60 : 54);
 
         if (isSeasonLabelMode) {
             const seasonLineWidth = 10;
@@ -2167,7 +2202,7 @@
         }
 
         // --- DRAW MARS RING (outer planet, 1st beyond Sun) ---
-        const marsRingR = effectiveRadius + 58;
+        const marsRingR = effectiveRadius + (isExpandedMode ? 69 : 58);
         if (isExpandedMode) {
             ctx.beginPath();
             ctx.arc(0, 0, marsRingR, 0, 2 * Math.PI);
@@ -2177,7 +2212,7 @@
         }
 
         // --- DRAW JUPITER RING (outer planet, 2nd beyond Sun) ---
-        const jupiterRingR = effectiveRadius + 68;
+        const jupiterRingR = effectiveRadius + (isExpandedMode ? 78 : 68);
         if (isExpandedMode) {
             ctx.beginPath();
             ctx.arc(0, 0, jupiterRingR, 0, 2 * Math.PI);
@@ -2187,7 +2222,7 @@
         }
 
         // --- DRAW SATURN RING (outer planet, 3rd beyond Sun) ---
-        const saturnRingR = effectiveRadius + 78;
+        const saturnRingR = effectiveRadius + (isExpandedMode ? 87 : 78);
         if (isExpandedMode) {
             ctx.beginPath();
             ctx.arc(0, 0, saturnRingR, 0, 2 * Math.PI);
@@ -2196,11 +2231,194 @@
             ctx.stroke();
         }
 
+        // --- PLANETARY RING LABELS & SYNODIC ARCS (expanded mode only) ---
+        // Each ring shows the planet's synodic cycle visually, like the Sun ring shows seasons.
+        // Tick marks fall at key synodic events; labels start just after each tick.
+        // All anchored to the Sun's current position on the ring (seasonAngle = conjunction point).
+        if (isExpandedMode) {
+            const astroTimeNow = new Astronomy.AstroTime(now);
+
+            // --- MOON RING: synodic month phases ---
+            // New Moon (phase=0) is when Moon is at Sun's position; Full Moon (phase=0.5) is opposite.
+            // moonZodiacAngle already gives Moon's ecliptic angle in canvas coords.
+            // New moon anchor = seasonAngle (where Sun is = where new moon was/will be).
+            const moonRingLineWidth = 10;
+            const moonRingTickW = (moonRingLineWidth - 1) / 2;
+
+            ctx.beginPath();
+            ctx.arc(0, 0, moonRingR, 0, 2 * Math.PI);
+            ctx.lineWidth = moonRingLineWidth;
+            ctx.strokeStyle = 'rgba(196, 181, 253, 0.08)';
+            ctx.stroke();
+
+            const moonPhaseLabels = [
+                { label: '☽ NEW MOON',      phaseFrac: 0    },
+                { label: '☽ FIRST QUARTER', phaseFrac: 0.25 },
+                { label: '☽ FULL MOON',     phaseFrac: 0.5  },
+                { label: '☽ LAST QUARTER',  phaseFrac: 0.75 },
+            ];
+
+            for (const mph of moonPhaseLabels) {
+                // New moon is at seasonAngle. Phase advances clockwise (decreasing canvas angle).
+                const tickAngle = seasonAngle - mph.phaseFrac * 2 * Math.PI;
+
+                ctx.beginPath();
+                ctx.moveTo((moonRingR - moonRingTickW) * Math.cos(tickAngle), (moonRingR - moonRingTickW) * Math.sin(tickAngle));
+                ctx.lineTo((moonRingR + moonRingTickW) * Math.cos(tickAngle), (moonRingR + moonRingTickW) * Math.sin(tickAngle));
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = '#4b5563';
+                ctx.stroke();
+
+                ctx.save();
+                ctx.fillStyle = '#c4b5fd';
+                ctx.globalAlpha = 0.5;
+                ctx.font = '700 7px -apple-system, sans-serif';
+                const mChars = Array.from(mph.label);
+                let mAngle = tickAngle + 5 / moonRingR;
+                for (let i = 0; i < mChars.length; i++) {
+                    const cw = ctx.measureText(mChars[i]).width;
+                    const ca = mAngle + cw / (2 * moonRingR);
+                    ctx.save(); ctx.rotate(ca); ctx.translate(moonRingR, 0); ctx.rotate(Math.PI / 2);
+                    ctx.fillText(mChars[i], 0, 1.5);
+                    ctx.restore();
+                    mAngle += cw / moonRingR + 1.5 / moonRingR;
+                }
+                ctx.restore();
+            }
+
+            // --- PLANET RINGS: synodic cycle phases ---
+            const synodicDefs = [
+                {
+                    name: 'VENUS', ringR: venusRingR, color: '#fde68a',
+                    body: Astronomy.Body.Venus, synodicDays: 583.92,
+                    phases: [
+                        { label: '♀ INF. CONJ',     deg: 0   },
+                        { label: '♀ E. ELONG.',      deg: 72  },
+                        { label: '♀ SUP. CONJ',      deg: 180 },
+                        { label: '♀ W. ELONG.',      deg: 288 },
+                    ]
+                },
+                {
+                    name: 'MERCURY', ringR: mercuryRingR, color: '#9ca3af',
+                    body: Astronomy.Body.Mercury, synodicDays: 115.88,
+                    phases: [
+                        { label: '☿ INF. CONJ',     deg: 0   },
+                        { label: '☿ E. ELONG.',      deg: 63  },
+                        { label: '☿ SUP. CONJ',      deg: 180 },
+                        { label: '☿ W. ELONG.',      deg: 297 },
+                    ]
+                },
+                {
+                    name: 'MARS', ringR: marsRingR, color: '#f87171',
+                    body: Astronomy.Body.Mars, synodicDays: 779.94,
+                    phases: [
+                        { label: '♂ CONJ',           deg: 0   },
+                        { label: '♂ E. QUAD.',        deg: 90  },
+                        { label: '♂ OPP.',            deg: 180 },
+                        { label: '♂ W. QUAD.',        deg: 270 },
+                    ]
+                },
+                {
+                    name: 'JUPITER', ringR: jupiterRingR, color: '#fb923c',
+                    body: Astronomy.Body.Jupiter, synodicDays: 398.88,
+                    phases: [
+                        { label: '♃ CONJ',           deg: 0   },
+                        { label: '♃ E. QUAD.',        deg: 90  },
+                        { label: '♃ OPP.',            deg: 180 },
+                        { label: '♃ W. QUAD.',        deg: 270 },
+                    ]
+                },
+                {
+                    name: 'SATURN', ringR: saturnRingR, color: '#a78bfa',
+                    body: Astronomy.Body.Saturn, synodicDays: 378.09,
+                    phases: [
+                        { label: '♄ CONJ',           deg: 0   },
+                        { label: '♄ E. QUAD.',        deg: 90  },
+                        { label: '♄ OPP.',            deg: 180 },
+                        { label: '♄ W. QUAD.',        deg: 270 },
+                    ]
+                },
+            ];
+
+            for (const pl of synodicDefs) {
+                // Find last conjunction via SearchRelativeLongitude (planet lon = sun lon → rel. lon = 0)
+                let conjAnchorAngle = seasonAngle; // fallback: use Sun's current position
+                try {
+                    const searchBackMs = pl.synodicDays * 1.1 * 24 * 3600 * 1000;
+                    const searchFrom = new Astronomy.AstroTime(new Date(now.getTime() - searchBackMs));
+                    const conjEvent = Astronomy.SearchRelativeLongitude(pl.body, 0, searchFrom);
+                    if (conjEvent) {
+                        // Get Sun's ecliptic longitude at conjunction time — that's where 0° sits on the ring
+                        const conjSunVec = Astronomy.GeoVector(Astronomy.Body.Sun, conjEvent, true);
+                        const conjSunEcl = Astronomy.Ecliptic(conjSunVec);
+                        conjAnchorAngle = (Math.PI - (conjSunEcl.elon * Math.PI / 180)) % (2 * Math.PI);
+                    }
+                } catch(e) { /* use fallback */ }
+
+                const tickW = 6;
+                for (const ph of pl.phases) {
+                    // Phase deg=0 is at conjunction anchor; advances clockwise (decreasing canvas angle)
+                    const phaseRad = (ph.deg / 360) * 2 * Math.PI;
+                    const tickAngle = conjAnchorAngle - phaseRad;
+
+                    ctx.beginPath();
+                    ctx.moveTo((pl.ringR - tickW) * Math.cos(tickAngle), (pl.ringR - tickW) * Math.sin(tickAngle));
+                    ctx.lineTo((pl.ringR + tickW) * Math.cos(tickAngle), (pl.ringR + tickW) * Math.sin(tickAngle));
+                    ctx.lineWidth = 1.5;
+                    ctx.strokeStyle = '#374151';
+                    ctx.stroke();
+
+                    ctx.save();
+                    ctx.fillStyle = pl.color;
+                    ctx.globalAlpha = 0.55;
+                    ctx.font = '700 7px -apple-system, sans-serif';
+                    const chars = Array.from(ph.label);
+                    let cAngle = tickAngle + 5 / pl.ringR;
+                    for (let i = 0; i < chars.length; i++) {
+                        const cw = ctx.measureText(chars[i]).width;
+                        const ca = cAngle + cw / (2 * pl.ringR);
+                        ctx.save(); ctx.rotate(ca); ctx.translate(pl.ringR, 0); ctx.rotate(Math.PI / 2);
+                        ctx.fillText(chars[i], 0, 1.5);
+                        ctx.restore();
+                        cAngle += cw / pl.ringR + 1.5 / pl.ringR;
+                    }
+                    ctx.restore();
+                }
+            }
+
+            // Sun label on season ring — only when season arcs are NOT drawn
+            if (!isSeasonLabelMode) {
+                const sunTickW = 6;
+                ctx.beginPath();
+                ctx.moveTo((seasonRingR - sunTickW) * Math.cos(seasonAngle), (seasonRingR - sunTickW) * Math.sin(seasonAngle));
+                ctx.lineTo((seasonRingR + sunTickW) * Math.cos(seasonAngle), (seasonRingR + sunTickW) * Math.sin(seasonAngle));
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = '#374151';
+                ctx.stroke();
+
+                ctx.save();
+                ctx.fillStyle = '#fbbf24';
+                ctx.globalAlpha = 0.55;
+                ctx.font = '700 7px -apple-system, sans-serif';
+                const sunChars = Array.from('☉ SUN');
+                let sAngle = seasonAngle + 5 / seasonRingR;
+                for (let i = 0; i < sunChars.length; i++) {
+                    const cw = ctx.measureText(sunChars[i]).width;
+                    const ca = sAngle + cw / (2 * seasonRingR);
+                    ctx.save(); ctx.rotate(ca); ctx.translate(seasonRingR, 0); ctx.rotate(Math.PI / 2);
+                    ctx.fillText(sunChars[i], 0, 1.5);
+                    ctx.restore();
+                    sAngle += cw / seasonRingR + 1.5 / seasonRingR;
+                }
+                ctx.restore();
+            }
+        }
+
         // ---- DRAW ZODIAC RING(S) (Fixed Stars — outermost sphere) ----
         // Expanded: two concentric rings — inner = Sidereal, outer = Tropical
         // Condensed: a single ring, toggled between Tropical and Sidereal
-        const siderealZodiacRingR = effectiveRadius + 90;
-        const tropicalZodiacRingR = effectiveRadius + 104;
+        const siderealZodiacRingR = effectiveRadius + (isExpandedMode ? 98 : 90);
+        const tropicalZodiacRingR = effectiveRadius + (isExpandedMode ? 110 : 104);
         const zodiacRingR = effectiveRadius + 74;
         const zodiacSymbols = ['♈︎', '♉︎', '♊︎', '♋︎', '♌︎', '♍︎', '♎︎', '♏︎', '♐︎', '♑︎', '♒︎', '♓︎'];
         const zodiacNames = ['ARIES', 'TAURUS', 'GEMINI', 'CANCER', 'LEO', 'VIRGO', 'LIBRA', 'SCORPIO', 'SAGITTARIUS', 'CAPRICORN', 'AQUARIUS', 'PISCES'];
@@ -2275,7 +2493,7 @@
 
         // --- DRAW LITURGICAL RING ---
         if (isLiturgicalMode) {
-            const litRingR = effectiveRadius + (isExpandedMode ? 119 : 94); 
+            const litRingR = effectiveRadius + (isExpandedMode ? 122 : 94); 
             const litWidth = isExpandedMode ? 10 : 12;
             const litGap = 0.03; 
             
@@ -2381,9 +2599,9 @@
             'Saturn':  saturnRingR,
         } : {};
 
-        const planetOuterR = isExpandedMode ? 7 : 8;
-        const planetInnerR = isExpandedMode ? 6 : 7;
-        const planetFontSize = isExpandedMode ? 10 : 12;
+        const planetOuterR = isExpandedMode ? 8 : 8;
+        const planetInnerR = isExpandedMode ? 7 : 7;
+        const planetFontSize = isExpandedMode ? 12 : 12;
 
         for (const planet of planets) {
             const ringR = planetRingMap[planet.name] || seasonRingR;
@@ -2414,8 +2632,8 @@
             ctx.restore();
         }
 
-        // Moon Indicator (Draws over top of the month track)
-        const moonR = monthsRingR;
+        // Moon Indicator (Draws on its own ring, outside the months separator)
+        const moonR = moonRingR;
         let moonAngle;
 
         if (moonContinuousHour !== null) {
