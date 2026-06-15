@@ -706,7 +706,8 @@
             </label>
             <span class="toggle-label right" id="labelChristianWeek" onclick="setWeekMode(true)">Christian Week</span>
         </div>
-        <div class="toggle-wrapper" id="planetsToggleWrapper">
+        <div class="toggle-wrapper" id="planetsToggleWrapper" style="display:none">
+            <span class="toggle-label left active" id="labelPlanetsOff" onclick="setPlanetsMode(false)">Hide Planets</span>
             <label class="switch">
                 <input type="checkbox" id="planetsToggle" onchange="togglePlanetsMode()">
                 <span class="slider"></span>
@@ -743,7 +744,7 @@
             </label>
             <span class="toggle-label right" id="labelZodiacText" onclick="setZodiacMode(true)">Text</span>
         </div>
-        <div class="toggle-wrapper" id="zodiacSiderealWrapper">
+        <div class="toggle-wrapper" id="zodiacSiderealWrapper" style="display:none">
             <span class="toggle-label left active" id="labelZodiacTropical" onclick="setZodiacSiderealMode(false)">Tropical</span>
             <label class="switch">
                 <input type="checkbox" id="zodiacSiderealToggle" onchange="toggleZodiacSiderealMode()">
