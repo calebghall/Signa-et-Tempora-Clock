@@ -444,7 +444,7 @@
         .clock-container {
             position: relative;
             width: 100%;
-            max-width: 480px;
+            max-width: 520px;
             aspect-ratio: 1 / 1;
             height: auto;
             margin: 36px auto;
@@ -570,7 +570,7 @@
     <div class="period-label" id="periodLabel">---</div>
 
     <div class="clock-container">
-        <canvas id="clockCanvas" width="480" height="480"></canvas>
+        <canvas id="clockCanvas" width="520" height="520"></canvas> 
     </div>
 
     <div class="input-group">
@@ -653,17 +653,43 @@
                 <span class="date-display" id="dateDisplay">Real Time</span>
                 <input type="date" id="jumpDateInput" class="date-input" onchange="handleJumpDate()" title="Jump to exact date">
             </div>
-            <div class="speed-labels">
-                <span>Rewind</span>
-                <span>Speed Adjust</span>
-                <span>Fast Fwd</span>
+
+            <div class="speed-labels" style="margin-bottom: -6px; margin-top: 8px;">
+                <span style="font-size: 11px; text-transform: uppercase;">Time Increment:</span>
+                <span id="incrementLabel" style="color: var(--accent-day); font-weight: 700;">1 Second</span>
             </div>
-            <!-- Speed slider from -100 to 100 -->
-            <input type="range" min="-100" max="100" value="0" class="speed-range" id="speedSlider">
-            <button class="reset-btn" onclick="resetSpeed()" style="width:100%; margin-top: 6px;">Reset to Now</button>
+            <input type="range" min="0" max="8" value="0" class="speed-range" id="incrementSlider" oninput="updateIncrementLabel()">
+
+            <div style="display:flex; justify-content: space-between; gap:8px; margin-top: 10px;">
+                <button class="icon-btn" onclick="stepTime(-1)" title="Skip Backward" style="flex:1;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                </button>
+                <button class="icon-btn" id="btnRw" onclick="setVCRMode('rw')" title="Rewind" style="flex:1; color: var(--text-muted);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+                </button>
+                <button class="icon-btn" id="btnPlayPause" onclick="togglePlayPause()" title="Play/Pause" style="flex:1; color: var(--text-muted);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </button>
+                <button class="icon-btn" id="btnFf" onclick="setVCRMode('ff')" title="Fast Forward" style="flex:1; color: var(--text-muted);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+                </button>
+                <button class="icon-btn" onclick="stepTime(1)" title="Skip Forward" style="flex:1;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                </button>
+            </div>
+
+            <button class="reset-btn" onclick="resetSpeed()" style="width:100%; margin-top: 8px;">Reset to Now</button>
         </div>
         <!-- CLOCK FACE -->
         <p style="font-size: 14px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 8px 0 4px;">Clock Face</p>
+        <div class="toggle-wrapper">
+            <span class="toggle-label left active" id="labelCondensed" onclick="setExpandedMode(false)">Condensed</span>
+            <label class="switch">
+                <input type="checkbox" id="expandedModeToggle" onchange="toggleExpandedMode()" checked>
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label right" id="labelExpanded" onclick="setExpandedMode(true)">Expanded</span>
+        </div>
         <div class="toggle-wrapper">
             <span class="toggle-label left active" id="labelFixed" onclick="setMode(false)">Fixed Horizon</span>
             <label class="switch">
@@ -718,7 +744,7 @@
             </label>
             <span class="toggle-label right" id="labelZodiacText" onclick="setZodiacMode(true)">Text</span>
         </div>
-        <div class="toggle-wrapper">
+        <div class="toggle-wrapper" id="zodiacSiderealWrapper">
             <span class="toggle-label left active" id="labelZodiacTropical" onclick="setZodiacSiderealMode(false)">Tropical</span>
             <label class="switch">
                 <input type="checkbox" id="zodiacSiderealToggle" onchange="toggleZodiacSiderealMode()">
@@ -734,6 +760,7 @@
             </label>
             <span class="toggle-label right" id="labelZodiacNorm" onclick="setZodiacNormMode(true)">Variable</span>
         </div>
+        <p id="zodiacExpandedCaption" style="font-size: 12px; color: var(--text-muted); margin: 2px 0 4px; opacity: 0.7; display: none;">Outer ring: Tropical (always Even 30°) &nbsp;•&nbsp; Inner ring: Sidereal (toggle above)</p>
 
         <!-- LITURGICAL -->
         <p style="font-size: 14px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 16px 0 4px;">Liturgical</p>
@@ -873,8 +900,10 @@
     let animFrame = null;
     let simulatedTime = Date.now();
     let lastUpdate = Date.now();
+    const synodicCache = {};
 
     // Toggles
+    let isExpandedMode = true;
     let isProportionalMode = false;
     let isPlanetsMode = true;
     let isZodiacTextMode = true;
@@ -945,6 +974,12 @@
     }
 
     function loadSettings() {
+        if (localStorage.getItem('uh_expandedMode') !== null) {
+            isExpandedMode = localStorage.getItem('uh_expandedMode') === 'true';
+            document.getElementById('expandedModeToggle').checked = isExpandedMode;
+        } else {
+            document.getElementById('expandedModeToggle').checked = true;
+        }
         if (localStorage.getItem('uh_propMode') !== null) {
             isProportionalMode = localStorage.getItem('uh_propMode') === 'true';
             document.getElementById('modeToggle').checked = isProportionalMode;
@@ -1009,6 +1044,9 @@
     }
 
     function updateToggleLabels() {
+        document.getElementById('labelCondensed').classList.toggle('active', !isExpandedMode);
+        document.getElementById('labelExpanded').classList.toggle('active', isExpandedMode);
+
         document.getElementById('labelFixed').classList.toggle('active', !isProportionalMode);
         document.getElementById('labelFlex').classList.toggle('active', isProportionalMode);
         
@@ -1023,6 +1061,12 @@
 
         document.getElementById('labelZodiacTropical').classList.toggle('active', !isZodiacSiderealMode);
         document.getElementById('labelZodiacSidereal').classList.toggle('active', isZodiacSiderealMode);
+
+        // In Expanded mode both Tropical and Sidereal zodiac rings are shown at once,
+        // so the single-ring Tropical/Sidereal toggle is hidden in favor of a caption.
+        document.getElementById('zodiacSiderealWrapper').style.display = isExpandedMode ? 'none' : '';
+        document.getElementById('zodiacExpandedCaption').style.display = isExpandedMode ? '' : 'none';
+        document.getElementById('planetsToggleWrapper').style.display = isExpandedMode ? 'none' : '';
 
         document.getElementById('labelSeasonOff').classList.toggle('active', !isSeasonLabelMode);
         document.getElementById('labelSeasonOn').classList.toggle('active', isSeasonLabelMode);
@@ -1321,12 +1365,12 @@
         const advent1Prev = new Date(christmasPrev.getTime() - (offsetPrev + 21) * 86400000);
         
         return [
-            { start: getDOY_Current(christmasPrev), end: 6, color: 'gold', text: 'NATIVITY', textColor: '#111113' },
-            { start: 6, end: getDOY_Current(ashWed), color: 'darkseagreen', text: 'AFTER EPIPHANY', textColor: '#111113' },
+            { start: getDOY_Current(christmasPrev), end: 6, color: '#fbbf24', text: 'NATIVITY', textColor: '#111113' },
+            { start: 6, end: getDOY_Current(ashWed), color: '#34d399', text: 'AFTER EPIPHANY', textColor: '#111113' },
             { start: getDOY_Current(ashWed), end: getDOY_Current(easter), color: 'purple', text: 'QUADREGESIMAE', textColor: '#f8fafc' },
-            { start: getDOY_Current(easter), end: getDOY_Current(pentecost)+1, color: 'gold', text: 'PASCHALTIDE', textColor: '#111113' },
+            { start: getDOY_Current(easter), end: getDOY_Current(pentecost)+1, color: '#fbbf24', text: 'PASCHALTIDE', textColor: '#111113' },
             //{ start: getDOY_Current(pentecost), end: getDOY_Current(pentecost) + 7, color: '#ef4444', text: 'PENT.', textColor: '#f8fafc' },
-            { start: getDOY_Current(pentecost) + 1, end: getDOY_Current(advent1Prev), color: 'darkseagreen', text: 'ORDINARY TIME AFTER PENTECOST', textColor: '#111113' },
+            { start: getDOY_Current(pentecost) + 1, end: getDOY_Current(advent1Prev), color: '#34d399', text: 'ORDINARY TIME AFTER PENTECOST', textColor: '#111113' },
             { start: getDOY_Current(advent1Prev), end: getDOY_Current(christmasPrev), color: 'purple', text: 'ADVENT', textColor: '#f8fafc' }
         ];
     }
@@ -1395,11 +1439,104 @@
         btn.classList.toggle('active');
     }
 
+    // --- MEDIA CONTROL STATE ---
+    const timeIncrements = [
+        { name: "1 Second",  ms: 1000 },
+        { name: "1 Minute",  ms: 60000 },
+        { name: "1 Hour",    ms: 3600000 },
+        { name: "12 Hours",  ms: 43200000 },
+        { name: "1 Day",     ms: 86400000 },
+        { name: "1 Week",    ms: 604800000 },
+        { name: "1 Month",   ms: 2592000000 },
+        { name: "1 Quarter", ms: 7776000000 },
+        { name: "1 Year",    ms: 31536000000 }
+    ];
+    
+    let playMode = 'play'; // 'play', 'paused', 'ff', 'rw'
+    let vcrAccumulator = 0; // Tracks real milliseconds for the "snap" effect
+
+    function updateIncrementLabel() {
+        const slider = document.getElementById('incrementSlider');
+        const label = document.getElementById('incrementLabel');
+        if (!slider || !label) return;
+
+        const val = slider.value;
+        label.innerText = timeIncrements[val].name; 
+    }
+
+    function togglePlayPause() {
+        if (playMode === 'play') {
+            playMode = 'paused';
+        } else {
+            playMode = 'play';
+            document.getElementById('incrementSlider').value = 0; // Reset to 1 Second
+            updateIncrementLabel();
+        }
+        vcrAccumulator = 0;
+        updateButtonUI();
+    }
+
+    function setVCRMode(mode) {
+        const slider = document.getElementById('incrementSlider');
+        
+        if (playMode === mode) {
+            // If already in this mode, bump the speed up one notch
+            let currentVal = parseInt(slider.value, 10);
+            if (currentVal < parseInt(slider.max, 10)) {
+                slider.value = currentVal + 1;
+                updateIncrementLabel();
+            }
+        } else {
+            // Switching to a new mode
+            playMode = mode;
+            // If starting from normal 1-sec speed, automatically bump to 1-min speed
+            if (slider.value == 0) {
+                slider.value = 1;
+                updateIncrementLabel();
+            }
+        }
+        
+        vcrAccumulator = 0; // Reset the accumulator for a clean "snap" on the new speed
+        updateButtonUI();
+    }
+
+    function stepTime(direction) {
+        const val = document.getElementById('incrementSlider').value;
+        const incMs = timeIncrements[val].ms;
+        simulatedTime += direction * incMs;
+        lastUpdate = Date.now();
+    }
+
     function resetSpeed() {
-        document.getElementById('speedSlider').value = 0;
+        document.getElementById('incrementSlider').value = 0;
         document.getElementById('jumpDateInput').value = "";
+        updateIncrementLabel();
+        
         simulatedTime = Date.now(); 
         lastUpdate = Date.now();
+        playMode = 'play'; 
+        vcrAccumulator = 0;
+        updateButtonUI();
+    }
+
+    function updateButtonUI() {
+        const btnRw = document.getElementById('btnRw');
+        const btnFf = document.getElementById('btnFf');
+        const btnPlayPause = document.getElementById('btnPlayPause');
+
+        if (btnRw) btnRw.style.color = (playMode === 'rw') ? 'var(--accent-day)' : 'var(--text-muted)';
+        if (btnFf) btnFf.style.color = (playMode === 'ff') ? 'var(--accent-day)' : 'var(--text-muted)';
+        
+        if (btnPlayPause) {
+            if (playMode === 'paused') {
+                btnPlayPause.style.color = 'var(--text-muted)';
+                btnPlayPause.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+            } else {
+                // Changed from var(--accent-day) to var(--text-main)
+                btnPlayPause.style.color = (playMode === 'play') ? 'var(--text-main)' : 'var(--text-muted)';
+                btnPlayPause.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+            }
+        }
     }
 
     function handleJumpDate() {
@@ -1422,6 +1559,13 @@
     }
     function setMode(isProp) { document.getElementById('modeToggle').checked = isProp; toggleMode(); }
 
+    function toggleExpandedMode() {
+        isExpandedMode = document.getElementById('expandedModeToggle').checked;
+        localStorage.setItem('uh_expandedMode', isExpandedMode);
+        updateToggleLabels();
+    }
+    function setExpandedMode(isOn) { document.getElementById('expandedModeToggle').checked = isOn; toggleExpandedMode(); }
+
     function togglePlanetsMode() {
         isPlanetsMode = document.getElementById('planetsToggle').checked;
         localStorage.setItem('uh_planetsMode', isPlanetsMode);
@@ -1442,7 +1586,7 @@
         updateToggleLabels();
     }
     function setZodiacNormMode(isOn) { document.getElementById('zodiacNormToggle').checked = isOn; toggleZodiacNormMode(); }
-    
+
     function toggleZodiacSiderealMode() {
         isZodiacSiderealMode = document.getElementById('zodiacSiderealToggle').checked;
         localStorage.setItem('uh_zodSiderealMode', isZodiacSiderealMode);
@@ -1662,14 +1806,34 @@
         const dt = realNow - lastUpdate;
         lastUpdate = realNow;
 
-        const speedVal = parseFloat(document.getElementById('speedSlider').value);
-        let speedMultiplier = 1;
+        const sliderVal = document.getElementById('incrementSlider').value;
+        const incMs = timeIncrements[sliderVal].ms;
         
-        if (speedVal !== 0) {
-            speedMultiplier = Math.sign(speedVal) * Math.pow(1.18, Math.abs(speedVal));
+        // Apply elapsed time only if not paused
+        if (playMode !== 'paused') {
+            if (playMode === 'play') {
+                simulatedTime += dt;
+                vcrAccumulator = 0;
+            } else {
+                const direction = (playMode === 'ff') ? 1 : -1;
+                
+                if (sliderVal >= 4) { 
+                    // SNAP MODE (1 Day or more): Step once per real second
+                    vcrAccumulator += dt;
+                    if (vcrAccumulator >= 1000) {
+                        const ticks = Math.floor(vcrAccumulator / 1000);
+                        vcrAccumulator -= ticks * 1000;
+                        simulatedTime += direction * (ticks * incMs);
+                    }
+                } else {
+                    // SMOOTH MODE (1 Sec, 1 Min, 1 Hr, 12 Hrs): Spin smoothly
+                    const multiplier = (incMs / 1000) * direction;
+                    simulatedTime += dt * multiplier;
+                    vcrAccumulator = 0;
+                }
+            }
         }
 
-        simulatedTime += (dt * speedMultiplier);
         const now = new Date(simulatedTime);
 
         const dateDisplay = document.getElementById('dateDisplay');
@@ -1677,11 +1841,19 @@
             year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'
         });
 
-        if (speedVal === 0) {
+        // "Real Time" only applies if we are playing smoothly at 1x speed, and are currently close to the present
+        const isRealTime = (playMode === 'play' && Math.abs(simulatedTime - Date.now()) < 5000);
+
+        if (isRealTime) {
             dateDisplay.innerText = "Real Time: " + displayStr;
             dateDisplay.style.color = "var(--text-main)";
         } else {
-            dateDisplay.innerText = "Simulating: " + displayStr;
+            const stateStr = (playMode === 'paused') ? "Paused: " : 
+                             (playMode === 'play') ? "Simulating: " : 
+                             (playMode === 'ff') ? `FFwd (${timeIncrements[sliderVal].name}/s): ` : 
+                             `Rewind (${timeIncrements[sliderVal].name}/s): `;
+            
+            dateDisplay.innerText = stateStr + displayStr;
             dateDisplay.style.color = "var(--accent-day)";
         }
         
@@ -1753,11 +1925,12 @@
         const planets = [];
         if (isPlanetsMode) {
             const planetDefs = [
-                { name: 'Mercury', body: Astronomy.Body.Mercury, color: '#9ca3af', symbol: '☿' },
-                { name: 'Venus',   body: Astronomy.Body.Venus,   color: '#f0d080', symbol: '♀' },
-                { name: 'Mars',    body: Astronomy.Body.Mars,    color: '#ef4444', symbol: '♂' },
-                { name: 'Jupiter', body: Astronomy.Body.Jupiter, color: '#fb923c', symbol: '♃' },
-                { name: 'Saturn',  body: Astronomy.Body.Saturn,  color: '#a78bfa', symbol: '♄' },
+                // Medieval Alchemical Palette
+                { name: 'Mercury', body: Astronomy.Body.Mercury, color: '#c084fc', symbol: '☿' }, // Quicksilver / Violet
+                { name: 'Venus',   body: Astronomy.Body.Venus,   color: '#34d399', symbol: '♀' }, // Copper / Emerald
+                { name: 'Mars',    body: Astronomy.Body.Mars,    color: '#f87171', symbol: '♂' }, // Iron / Red
+                { name: 'Jupiter', body: Astronomy.Body.Jupiter, color: '#60a5fa', symbol: '♃' }, // Tin / Sapphire
+                { name: 'Saturn',  body: Astronomy.Body.Saturn,  color: '#a8a29e', symbol: '♄' }, // Lead / Earthy Grey
             ];
             for (const planet of planetDefs) {
                 const vec = Astronomy.GeoVector(planet.body, astroTime, true);
@@ -1870,7 +2043,7 @@
         const canvas = document.getElementById('clockCanvas');
         const ctx = canvas.getContext('2d');
         
-        const size = 480;
+        const size = 520;
         const center = size / 2;
         
         const dpr = window.devicePixelRatio || 1;
@@ -1885,7 +2058,7 @@
         ctx.clearRect(0, 0, size, size);
         ctx.translate(center, center);
         
-        const effectiveRadius = center - 114; 
+        const effectiveRadius = isExpandedMode ? center - 160 : center - 134; 
 
         // Helper function to draw curved text
         function drawCurvedText(text, radius, centerAngle, letterSpacing = 2) {
@@ -2000,9 +2173,9 @@
         const daysInYear = (now.getUTCFullYear() % 4 === 0 && now.getUTCFullYear() % 100 !== 0) || (now.getUTCFullYear() % 400 === 0) ? 366 : 365;
 
         // --- DAY OF WEEK RING ---
-        const weekRingR = effectiveRadius + 14;
+        const weekRingR = effectiveRadius + (isExpandedMode ? 10 : 14);
         const daySegAngle = (2 * Math.PI) / 7;
-        const weekLineWidth = 18; // Thickness of the ring
+        const weekLineWidth = isExpandedMode ? 12 : 18; // Thickness of the ring
         const weekTickWidth = (weekLineWidth-1)/2
 
         const planetaryDayNames = ['☉ SUN', '☽ MON', '♂ TUE', '☿ WED', '♃ THU', '♀ FRI', '♄ SAT'];
@@ -2043,17 +2216,25 @@
                 ctx.font = '700 12px sans-serif';
                 drawCurvedText(christianDayNames[weekday], weekRingR, midAngle, 1.5);
             } else {
-                ctx.font = '700 12px sans-serif';
+                ctx.font = '700 12px "Segoe UI Symbol", "Apple Symbols", -apple-system, sans-serif';
                 drawCurvedText(planetaryDayNames[weekday], weekRingR, midAngle, 1.5);
             }
             ctx.restore();
         }
 
-        // --- DRAW MONTHS RING (Now the Moon track) ---
-        const monthsRingR = effectiveRadius + 34;
-        const monthLineWidth = 18;
+        // --- DRAW MONTHS RING ---
+        const monthsRingR = effectiveRadius + (isExpandedMode ? 24 : 34);
+        const monthLineWidth = isExpandedMode ? 12 : 18;
         const monthTickWidth = (monthLineWidth-1)/2
         
+        // Separator Line between week ring and month ring
+        const weekMonthSeparatorR = (weekRingR + monthsRingR) / 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, weekMonthSeparatorR, 0, 2 * Math.PI);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#374151';
+        ctx.stroke();
+
         ctx.beginPath();
         ctx.arc(0, 0, monthsRingR, 0, 2 * Math.PI);
         ctx.lineWidth = monthLineWidth;
@@ -2082,8 +2263,40 @@
             drawCurvedText(monthNames[i], monthsRingR, midAngle, 1.5);
         }
 
+        // --- HARD SEPARATOR LINE between months ring and moon ring ---
+        // Mirrors the inner clock face border style
+        const monthMoonSeparatorR = monthsRingR + (monthLineWidth / 2) + 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, monthMoonSeparatorR, 0, 2 * Math.PI);
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#374151';
+        ctx.stroke();
+
+        // --- MOON RING (separate from months ring) ---
+        const moonRingR = monthMoonSeparatorR + (isExpandedMode ? 8 : 10);
+
+        // --- DRAW VENUS RING (inner planet, 2nd from Moon) ---
+        const venusRingR = effectiveRadius + (isExpandedMode ? 52 : 32);
+        if (isExpandedMode) {
+            ctx.beginPath();
+            ctx.arc(0, 0, venusRingR, 0, 2 * Math.PI);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'rgba(52, 211, 153, 0.08)'; // Emerald Green
+            ctx.stroke();
+        }
+
+        // --- DRAW MERCURY RING (inner planet, closest to Sun) ---
+        const mercuryRingR = effectiveRadius + (isExpandedMode ? 64 : 40);
+        if (isExpandedMode) {
+            ctx.beginPath();
+            ctx.arc(0, 0, mercuryRingR, 0, 2 * Math.PI);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'rgba(192, 132, 252, 0.08)'; // Quicksilver Violet
+            ctx.stroke();
+        }
+
         // --- DRAW SEASON RING (Sun Track) ---
-        const seasonRingR = effectiveRadius + 54;
+        const seasonRingR = effectiveRadius + (isExpandedMode ? 76 : 55);
 
         if (isSeasonLabelMode) {
             const seasonLineWidth = 10;
@@ -2119,15 +2332,173 @@
             // Faint track if natural seasons are toggled off
             ctx.beginPath();
             ctx.arc(0, 0, seasonRingR, 0, 2 * Math.PI);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = isExpandedMode ? 10 : 2;
+            ctx.strokeStyle = isExpandedMode ? 'rgba(251, 191, 36, 0.08)' : 'rgba(255, 255, 255, 0.05)';
             ctx.stroke();
         }
 
-        // ---- DRAW ZODIAC RING ----
+        // --- DRAW MARS RING (outer planet, 1st beyond Sun) ---
+        const marsRingR = effectiveRadius + (isExpandedMode ? 88 : 58);
+        if (isExpandedMode) {
+            ctx.beginPath();
+            ctx.arc(0, 0, marsRingR, 0, 2 * Math.PI);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'rgba(248, 113, 113, 0.08)'; // Iron Red
+            ctx.stroke();
+        }
+
+        // --- DRAW JUPITER RING (outer planet, 2nd beyond Sun) ---
+        const jupiterRingR = effectiveRadius + (isExpandedMode ? 100 : 68);
+        if (isExpandedMode) {
+            ctx.beginPath();
+            ctx.arc(0, 0, jupiterRingR, 0, 2 * Math.PI);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'rgba(96, 165, 250, 0.08)'; // Sapphire Blue
+            ctx.stroke();
+        }
+
+        // --- DRAW SATURN RING (outer planet, 3rd beyond Sun) ---
+        const saturnRingR = effectiveRadius + (isExpandedMode ? 112 : 78);
+        if (isExpandedMode) {
+            ctx.beginPath();
+            ctx.arc(0, 0, saturnRingR, 0, 2 * Math.PI);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'rgba(168, 162, 158, 0.08)'; // Leaden Grey
+            ctx.stroke();
+        }
+
+        // --- PLANETARY RING LABELS & SYNODIC ARCS (expanded mode only) ---
+        // Each ring shows the planet's synodic cycle visually, like the Sun ring shows seasons.
+        // Tick marks fall at key synodic events; labels start just after each tick.
+        // All anchored to the Sun's current position on the ring (seasonAngle = conjunction point).
+        if (isExpandedMode) {
+            const astroTimeNow = new Astronomy.AstroTime(now);
+
+            // --- MOON RING: synodic month phases ---
+            // New Moon (phase=0) is when Moon is at Sun's position; Full Moon (phase=0.5) is opposite.
+            // moonZodiacAngle already gives Moon's ecliptic angle in canvas coords.
+            // New moon anchor = seasonAngle (where Sun is = where new moon was/will be).
+            const moonRingLineWidth = 10;
+            const moonRingTickW = (moonRingLineWidth - 1) / 2;
+
+            ctx.beginPath();
+            ctx.arc(0, 0, moonRingR, 0, 2 * Math.PI);
+            ctx.lineWidth = moonRingLineWidth;
+            ctx.strokeStyle = 'rgba(229, 231, 235, 0.08)'; // Pure Silver (Moon)
+            ctx.stroke();
+
+            const moonPhaseLabels = [
+                { label: '☽ MOON',      phaseFrac: 0    },
+                { label: '', phaseFrac: 0.25 },
+                { label: '',     phaseFrac: 0.5  },
+                { label: '',  phaseFrac: 0.75 },
+            ];
+
+            for (const mph of moonPhaseLabels) {
+                // New moon is at seasonAngle. Phase advances clockwise (decreasing canvas angle).
+                const tickAngle = seasonAngle - mph.phaseFrac * 2 * Math.PI;
+
+                ctx.beginPath();
+                ctx.moveTo((moonRingR - moonRingTickW) * Math.cos(tickAngle), (moonRingR - moonRingTickW) * Math.sin(tickAngle));
+                ctx.lineTo((moonRingR + moonRingTickW) * Math.cos(tickAngle), (moonRingR + moonRingTickW) * Math.sin(tickAngle));
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = '#4b5563';
+                ctx.stroke();
+
+                ctx.save();
+                ctx.fillStyle = '#c4b5fd';
+                ctx.globalAlpha = 0.5;
+                ctx.font = '700 12px "Segoe UI Symbol", "Apple Symbols", -apple-system, sans-serif';
+                const mChars = Array.from(mph.label);
+                let mAngle = tickAngle + 5 / moonRingR;
+                for (let i = 0; i < mChars.length; i++) {
+                    const cw = ctx.measureText(mChars[i]).width;
+                    const ca = mAngle + cw / (2 * moonRingR);
+                    ctx.save(); ctx.rotate(ca); ctx.translate(moonRingR, 0); ctx.rotate(Math.PI / 2);
+                    ctx.fillText(mChars[i], 0, 1.5);
+                    ctx.restore();
+                    mAngle += cw / moonRingR + 1.5 / moonRingR;
+                }
+                ctx.restore();
+            }
+
+            // --- PLANET RINGS: Synodic markers ---
+            const synodicDefs = [
+                { name: 'VENUS',   ringR: venusRingR,   color: '#34d399', events: [{ label: '♀ VENUS', offset: 0 }] },
+                { name: 'MERCURY', ringR: mercuryRingR, color: '#c084fc', events: [{ label: '☿ MERCURY', offset: 0 }] },
+                { name: 'MARS',    ringR: marsRingR,    color: '#f87171', events: [{ label: '♂ MARS', offset: 0 }] },
+                { name: 'JUPITER', ringR: jupiterRingR, color: '#60a5fa', events: [{ label: '♃ JUPITER', offset: 0 }] },
+                { name: 'SATURN',  ringR: saturnRingR,  color: '#a8a29e', events: [{ label: '♄ SATURN', offset: 0 }] },
+            ];
+
+            for (const pl of synodicDefs) {
+                for (const event of pl.events) {
+                    // Anchor ticks dynamically to the Sun's position for a smooth, continuous synodic cycle
+                    const tickAngle = seasonAngle + event.offset;
+                    const tickW = 6;
+
+                    // Draw tick line
+                    ctx.beginPath();
+                    ctx.moveTo((pl.ringR - tickW) * Math.cos(tickAngle), (pl.ringR - tickW) * Math.sin(tickAngle));
+                    ctx.lineTo((pl.ringR + tickW) * Math.cos(tickAngle), (pl.ringR + tickW) * Math.sin(tickAngle));
+                    ctx.lineWidth = 1.5;
+                    ctx.strokeStyle = '#374151';
+                    ctx.stroke();
+
+                    // Draw text label
+                    ctx.save();
+                    ctx.fillStyle = pl.color;
+                    ctx.globalAlpha = 0.55;
+                    ctx.font = '700 12px "Segoe UI Symbol", "Apple Symbols", -apple-system, sans-serif';
+                    
+                    const chars = Array.from(event.label);
+                    let cAngle = tickAngle + 5 / pl.ringR;
+                    for (let i = 0; i < chars.length; i++) {
+                        const cw = ctx.measureText(chars[i]).width;
+                        const ca = cAngle + cw / (2 * pl.ringR);
+                        ctx.save(); ctx.rotate(ca); ctx.translate(pl.ringR, 0); ctx.rotate(Math.PI / 2);
+                        ctx.fillText(chars[i], 0, 1.5);
+                        ctx.restore();
+                        cAngle += cw / pl.ringR + 1.5 / pl.ringR;
+                    }
+                    ctx.restore();
+                }
+            }
+
+            // Sun label on season ring — only when season arcs are NOT drawn
+            if (!isSeasonLabelMode) {
+                const sunTickW = 6;
+                ctx.beginPath();
+                ctx.moveTo((seasonRingR - sunTickW) * Math.cos(seasonAngle), (seasonRingR - sunTickW) * Math.sin(seasonAngle));
+                ctx.lineTo((seasonRingR + sunTickW) * Math.cos(seasonAngle), (seasonRingR + sunTickW) * Math.sin(seasonAngle));
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = '#374151';
+                ctx.stroke();
+
+                ctx.save();
+                ctx.fillStyle = '#fbbf24';
+                ctx.globalAlpha = 0.55;
+                ctx.font = '700 7px -apple-system, sans-serif';
+                const sunChars = Array.from('');
+                let sAngle = seasonAngle + 5 / seasonRingR;
+                for (let i = 0; i < sunChars.length; i++) {
+                    const cw = ctx.measureText(sunChars[i]).width;
+                    const ca = sAngle + cw / (2 * seasonRingR);
+                    ctx.save(); ctx.rotate(ca); ctx.translate(seasonRingR, 0); ctx.rotate(Math.PI / 2);
+                    ctx.fillText(sunChars[i], 0, 1.5);
+                    ctx.restore();
+                    sAngle += cw / seasonRingR + 1.5 / seasonRingR;
+                }
+                ctx.restore();
+            }
+        }
+
+        // ---- DRAW ZODIAC RING(S) (Fixed Stars — outermost sphere) ----
+        // Expanded: two concentric rings — inner = Sidereal, outer = Tropical
+        // Condensed: a single ring, toggled between Tropical and Sidereal
+        const siderealZodiacRingR = effectiveRadius + (isExpandedMode ? 125 : 90);
+        const tropicalZodiacRingR = effectiveRadius + (isExpandedMode ? 139 : 104);
         const zodiacRingR = effectiveRadius + 74;
-        const zodiacLineWidth = 18;
-        const zodiacTickWidth = (zodiacLineWidth-1)/2
         const zodiacSymbols = ['♈︎', '♉︎', '♊︎', '♋︎', '♌︎', '♍︎', '♎︎', '♏︎', '♐︎', '♑︎', '♒︎', '♓︎'];
         const zodiacNames = ['ARIES', 'TAURUS', 'GEMINI', 'CANCER', 'LEO', 'VIRGO', 'LIBRA', 'SCORPIO', 'SAGITTARIUS', 'CAPRICORN', 'AQUARIUS', 'PISCES'];
 
@@ -2136,63 +2507,73 @@
         const yearsSinceJ2000 = (now - J2000) / (365.25 * 24 * 3600 * 1000);
         const precessionCalc = 24 + yearsSinceJ2000 * 0.01396;
 
-        // Tropical: Aries = 0° (vernal equinox), no correction needed
-        // Sidereal: shift all boundaries by precessionCalc
-        const siderealOffset = isZodiacSiderealMode ? precessionCalc : 0;
-
         const iauBoundaries  = [28.5, 53.5, 90.0, 118.0, 137.5, 174.0, 217.5, 241.0, 253.5, 298.5, 327.0, 348.5];
         const evenBoundaries = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
 
-        const baseSet = isZodiacNormMode ? iauBoundaries : evenBoundaries;
+        // Draws one zodiac ring at the given radius with the given boundary set and offset
+        // (offset = 0 for Tropical, offset = precessionCalc for Sidereal)
+        function drawZodiacRing(ringR, boundarySet, offsetDeg, trackAlpha, lineWidth, textFontSize, symbolFontSize, textSpacing) {
+            const tickWidth = (lineWidth-1)/2;
+            const boundaries = boundarySet.map(deg => (deg + offsetDeg) % 360);
 
-        // Apply sidereal offset — in sidereal mode the whole ring shifts by precessionCalc
-        const currentBoundaries = baseSet.map(deg => (deg + siderealOffset) % 360);
-        
-        // 3. DRAW THE TRACK BACKGROUND
-        ctx.beginPath();
-        ctx.arc(0, 0, zodiacRingR, 0, 2 * Math.PI);
-        ctx.lineWidth = zodiacLineWidth;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-        ctx.stroke();
-
-        // 4. DRAW THE SIGNS AND DIVIDERS
-        ctx.fillStyle = '#6b7280';
-        for (let i = 0; i < 12; i++) {
-            let startDeg = currentBoundaries[i];
-            let nextDeg = (i === 11) ? currentBoundaries[0] : currentBoundaries[i + 1];
-            
-            let span = nextDeg - startDeg;
-            if (span < 0) span += 360;
-        
-            let startRad = (-startDeg * Math.PI / 180) + Math.PI;
-        
-            // Draw Divider Lines
+            // DRAW THE TRACK BACKGROUND
             ctx.beginPath();
-            ctx.moveTo((zodiacRingR - zodiacTickWidth) * Math.cos(startRad), (zodiacRingR - zodiacTickWidth) * Math.sin(startRad));
-            ctx.lineTo((zodiacRingR + zodiacTickWidth) * Math.cos(startRad), (zodiacRingR + zodiacTickWidth) * Math.sin(startRad));
-            ctx.lineWidth = 1.5;
-            ctx.strokeStyle = '#374151'; 
+            ctx.arc(0, 0, ringR, 0, 2 * Math.PI);
+            ctx.lineWidth = lineWidth;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${trackAlpha})`;
             ctx.stroke();
-        
-            // Label Placement (Midpoint Method)
-            let midDeg = startDeg + (span / 2);
-            let midAngle = (-midDeg * Math.PI / 180) + Math.PI;
-        
-            if (isZodiacTextMode) {
-                ctx.font = '600 12px sans-serif'; 
-                drawCurvedText(zodiacNames[i], zodiacRingR, midAngle, 1.5);
-            } else {
-                ctx.font = '14px "Segoe UI Symbol", "Apple Symbols", sans-serif'; 
-                drawCurvedText(zodiacSymbols[i], zodiacRingR, midAngle, 0);
+
+            // DRAW THE SIGNS AND DIVIDERS
+            ctx.fillStyle = '#6b7280';
+            for (let i = 0; i < 12; i++) {
+                let startDeg = boundaries[i];
+                let nextDeg = (i === 11) ? boundaries[0] : boundaries[i + 1];
+
+                let span = nextDeg - startDeg;
+                if (span < 0) span += 360;
+
+                let startRad = (-startDeg * Math.PI / 180) + Math.PI;
+
+                // Draw Divider Lines
+                ctx.beginPath();
+                ctx.moveTo((ringR - tickWidth) * Math.cos(startRad), (ringR - tickWidth) * Math.sin(startRad));
+                ctx.lineTo((ringR + tickWidth) * Math.cos(startRad), (ringR + tickWidth) * Math.sin(startRad));
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = '#374151';
+                ctx.stroke();
+
+                // Label Placement (Midpoint Method)
+                let midDeg = startDeg + (span / 2);
+                let midAngle = (-midDeg * Math.PI / 180) + Math.PI;
+
+                if (isZodiacTextMode) {
+                    ctx.font = `600 ${textFontSize}px sans-serif`;
+                    drawCurvedText(zodiacNames[i], ringR, midAngle, textSpacing);
+                } else {
+                    ctx.font = `${symbolFontSize}px "Segoe UI Symbol", "Apple Symbols", sans-serif`;
+                    drawCurvedText(zodiacSymbols[i], ringR, midAngle, 0);
+                }
             }
         }
 
-        
+        if (isExpandedMode) {
+            // Inner ring: Sidereal (boundaries shifted by precession from J2000; respects Even 30°/Variable toggle)
+            const siderealBoundarySet = isZodiacNormMode ? iauBoundaries : evenBoundaries;
+            drawZodiacRing(siderealZodiacRingR, siderealBoundarySet, precessionCalc, 0.025, 12, 11, 13, 1);
+
+            // Outer ring: Tropical (Aries = 0° at the vernal equinox, always even 30° — unaffected by the toggle)
+            drawZodiacRing(tropicalZodiacRingR, evenBoundaries, 0, 0.03, 12, 11, 13, 1);
+        } else {
+            // Single ring, toggled between Tropical (offset 0) and Sidereal (precession offset)
+            const boundarySet = isZodiacNormMode ? iauBoundaries : evenBoundaries;
+            const offset = isZodiacSiderealMode ? precessionCalc : 0;
+            drawZodiacRing(zodiacRingR, boundarySet, offset, 0.03, 18, 12, 14, 1.5);
+        }
 
         // --- DRAW LITURGICAL RING ---
         if (isLiturgicalMode) {
-            const litRingR = effectiveRadius + 94; 
-            const litWidth = 12;
+            const litRingR = effectiveRadius + (isExpandedMode ? 152 : 94);
+            const litWidth = isExpandedMode ? 10 : 12;
             const litGap = 0.03; 
             
             const litSegments = getLiturgicalSegments(now);
@@ -2287,19 +2668,34 @@
         ctx.restore();
 
         // --- DRAW PLANET INDICATORS ---
+        // Traditional Ptolemaic order: Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn
+        // Expanded: each planet gets its own dedicated ring. Condensed: all planets share the Sun's ring.
+        const planetRingMap = isExpandedMode ? {
+            'Mercury': mercuryRingR,
+            'Venus':   venusRingR,
+            'Mars':    marsRingR,
+            'Jupiter': jupiterRingR,
+            'Saturn':  saturnRingR,
+        } : {};
+
+        const planetOuterR = isExpandedMode ? 8 : 8;
+        const planetInnerR = isExpandedMode ? 7 : 7;
+        const planetFontSize = isExpandedMode ? 12 : 12;
+
         for (const planet of planets) {
-            const px = seasonRingR * Math.cos(planet.angle);
-            const py = seasonRingR * Math.sin(planet.angle);
+            const ringR = planetRingMap[planet.name] || seasonRingR;
+            const px = ringR * Math.cos(planet.angle);
+            const py = ringR * Math.sin(planet.angle);
 
             // Outer dark ring
             ctx.beginPath();
-            ctx.arc(px, py, 8, 0, 2 * Math.PI);
+            ctx.arc(px, py, planetOuterR, 0, 2 * Math.PI);
             ctx.fillStyle = '#1c1c21';
             ctx.fill();
 
             // Colored circle
             ctx.beginPath();
-            ctx.arc(px, py, 7, 0, 2 * Math.PI);
+            ctx.arc(px, py, planetInnerR, 0, 2 * Math.PI);
             ctx.fillStyle = planet.color;
             ctx.fill();
 
@@ -2307,7 +2703,7 @@
             ctx.save();
             ctx.translate(px, py);
             ctx.rotate(-zodiacRotationOffset);
-            ctx.font = 'bold 12px sans-serif';
+            ctx.font = `bold ${planetFontSize}px "Segoe UI Symbol", "Apple Symbols", sans-serif`;
             ctx.fillStyle = '#1c1c21';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -2315,8 +2711,8 @@
             ctx.restore();
         }
 
-        // Moon Indicator (Draws over top of the month track)
-        const moonR = monthsRingR;
+        // Moon Indicator (Draws on its own ring, outside the months separator)
+        const moonR = moonRingR;
         let moonAngle;
 
         if (moonContinuousHour !== null) {
@@ -2381,7 +2777,7 @@
             ctx.moveTo(innerDist * Math.cos(angle), innerDist * Math.sin(angle));
             ctx.lineTo(effectiveRadius * Math.cos(angle), effectiveRadius * Math.sin(angle));
             
-            ctx.strokeStyle = isHour ? (h < 12 ? '#fbbf24' : '#60a5fa') : '#4b5563';
+            ctx.strokeStyle = isHour ? (h <= 12 ? '#fbbf24' : '#60a5fa') : '#4b5563';
             ctx.lineWidth = isHour ? 3 : 1.5;
             ctx.stroke();
         }
@@ -2418,7 +2814,7 @@
         // --- DRAW UNEQUAL HOUR HAND (Long Minute Hand) ---
         ctx.beginPath();
         ctx.moveTo(0, 0);
-        ctx.lineTo((effectiveRadius - 48) * Math.cos(hourHandAngle), (effectiveRadius - 48) * Math.sin(hourHandAngle));
+        ctx.lineTo((effectiveRadius - 38) * Math.cos(hourHandAngle), (effectiveRadius - 38) * Math.sin(hourHandAngle));
         ctx.lineWidth = 6;
         ctx.strokeStyle = accentColor;
         ctx.lineCap = 'round';
