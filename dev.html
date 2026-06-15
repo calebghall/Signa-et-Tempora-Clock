@@ -444,7 +444,7 @@
         .clock-container {
             position: relative;
             width: 100%;
-            max-width: 480px;
+            max-width: 520px; /* <--- Changed from 480px */
             aspect-ratio: 1 / 1;
             height: auto;
             margin: 36px auto;
@@ -570,7 +570,7 @@
     <div class="period-label" id="periodLabel">---</div>
 
     <div class="clock-container">
-        <canvas id="clockCanvas" width="480" height="480"></canvas>
+        <canvas id="clockCanvas" width="520" height="520"></canvas> <!-- <--- Changed from 480 -->
     </div>
 
     <div class="input-group">
@@ -890,6 +890,7 @@
     let animFrame = null;
     let simulatedTime = Date.now();
     let lastUpdate = Date.now();
+    const synodicCache = {};
 
     // Toggles
     let isExpandedMode = true;
@@ -1354,12 +1355,12 @@
         const advent1Prev = new Date(christmasPrev.getTime() - (offsetPrev + 21) * 86400000);
         
         return [
-            { start: getDOY_Current(christmasPrev), end: 6, color: 'gold', text: 'NATIVITY', textColor: '#111113' },
-            { start: 6, end: getDOY_Current(ashWed), color: 'darkseagreen', text: 'AFTER EPIPHANY', textColor: '#111113' },
+            { start: getDOY_Current(christmasPrev), end: 6, color: '#fbbf24', text: 'NATIVITY', textColor: '#111113' },
+            { start: 6, end: getDOY_Current(ashWed), color: '#34d399', text: 'AFTER EPIPHANY', textColor: '#111113' },
             { start: getDOY_Current(ashWed), end: getDOY_Current(easter), color: 'purple', text: 'QUADREGESIMAE', textColor: '#f8fafc' },
-            { start: getDOY_Current(easter), end: getDOY_Current(pentecost)+1, color: 'gold', text: 'PASCHALTIDE', textColor: '#111113' },
+            { start: getDOY_Current(easter), end: getDOY_Current(pentecost)+1, color: '#fbbf24', text: 'PASCHALTIDE', textColor: '#111113' },
             //{ start: getDOY_Current(pentecost), end: getDOY_Current(pentecost) + 7, color: '#ef4444', text: 'PENT.', textColor: '#f8fafc' },
-            { start: getDOY_Current(pentecost) + 1, end: getDOY_Current(advent1Prev), color: 'darkseagreen', text: 'ORDINARY TIME AFTER PENTECOST', textColor: '#111113' },
+            { start: getDOY_Current(pentecost) + 1, end: getDOY_Current(advent1Prev), color: '#34d399', text: 'ORDINARY TIME AFTER PENTECOST', textColor: '#111113' },
             { start: getDOY_Current(advent1Prev), end: getDOY_Current(christmasPrev), color: 'purple', text: 'ADVENT', textColor: '#f8fafc' }
         ];
     }
@@ -1798,11 +1799,12 @@
         const planets = [];
         if (isPlanetsMode) {
             const planetDefs = [
-                { name: 'Mercury', body: Astronomy.Body.Mercury, color: '#9ca3af', symbol: '☿' },
-                { name: 'Venus',   body: Astronomy.Body.Venus,   color: '#f0d080', symbol: '♀' },
-                { name: 'Mars',    body: Astronomy.Body.Mars,    color: '#ef4444', symbol: '♂' },
-                { name: 'Jupiter', body: Astronomy.Body.Jupiter, color: '#fb923c', symbol: '♃' },
-                { name: 'Saturn',  body: Astronomy.Body.Saturn,  color: '#a78bfa', symbol: '♄' },
+                // Medieval Alchemical Palette
+                { name: 'Mercury', body: Astronomy.Body.Mercury, color: '#c084fc', symbol: '☿' }, // Quicksilver / Violet
+                { name: 'Venus',   body: Astronomy.Body.Venus,   color: '#34d399', symbol: '♀' }, // Copper / Emerald
+                { name: 'Mars',    body: Astronomy.Body.Mars,    color: '#f87171', symbol: '♂' }, // Iron / Red
+                { name: 'Jupiter', body: Astronomy.Body.Jupiter, color: '#60a5fa', symbol: '♃' }, // Tin / Sapphire
+                { name: 'Saturn',  body: Astronomy.Body.Saturn,  color: '#a8a29e', symbol: '♄' }, // Lead / Earthy Grey
             ];
             for (const planet of planetDefs) {
                 const vec = Astronomy.GeoVector(planet.body, astroTime, true);
@@ -1915,7 +1917,7 @@
         const canvas = document.getElementById('clockCanvas');
         const ctx = canvas.getContext('2d');
         
-        const size = 480;
+        const size = 520; // <--- Changed from 480
         const center = size / 2;
         
         const dpr = window.devicePixelRatio || 1;
@@ -1930,7 +1932,8 @@
         ctx.clearRect(0, 0, size, size);
         ctx.translate(center, center);
         
-        const effectiveRadius = isExpandedMode ? center - 140 : center - 114; 
+        // Changed 140 to 160 so the inner clock face size stays the same as before
+        const effectiveRadius = isExpandedMode ? center - 160 : center - 134; 
 
         // Helper function to draw curved text
         function drawCurvedText(text, radius, centerAngle, letterSpacing = 2) {
@@ -2045,7 +2048,7 @@
         const daysInYear = (now.getUTCFullYear() % 4 === 0 && now.getUTCFullYear() % 100 !== 0) || (now.getUTCFullYear() % 400 === 0) ? 366 : 365;
 
         // --- DAY OF WEEK RING ---
-        const weekRingR = effectiveRadius + (isExpandedMode ? 8 : 14);
+        const weekRingR = effectiveRadius + (isExpandedMode ? 10 : 14);
         const daySegAngle = (2 * Math.PI) / 7;
         const weekLineWidth = isExpandedMode ? 12 : 18; // Thickness of the ring
         const weekTickWidth = (weekLineWidth-1)/2
@@ -2088,17 +2091,25 @@
                 ctx.font = '700 12px sans-serif';
                 drawCurvedText(christianDayNames[weekday], weekRingR, midAngle, 1.5);
             } else {
-                ctx.font = '700 12px sans-serif';
+                ctx.font = '700 12px "Segoe UI Symbol", "Apple Symbols", -apple-system, sans-serif';
                 drawCurvedText(planetaryDayNames[weekday], weekRingR, midAngle, 1.5);
             }
             ctx.restore();
         }
 
         // --- DRAW MONTHS RING ---
-        const monthsRingR = effectiveRadius + (isExpandedMode ? 19 : 34);
+        const monthsRingR = effectiveRadius + (isExpandedMode ? 24 : 34);
         const monthLineWidth = isExpandedMode ? 12 : 18;
         const monthTickWidth = (monthLineWidth-1)/2
         
+        // Separator Line between week ring and month ring
+        const weekMonthSeparatorR = (weekRingR + monthsRingR) / 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, weekMonthSeparatorR, 0, 2 * Math.PI);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#374151';
+        ctx.stroke();
+
         ctx.beginPath();
         ctx.arc(0, 0, monthsRingR, 0, 2 * Math.PI);
         ctx.lineWidth = monthLineWidth;
@@ -2129,7 +2140,7 @@
 
         // --- HARD SEPARATOR LINE between months ring and moon ring ---
         // Mirrors the inner clock face border style
-        const monthMoonSeparatorR = monthsRingR + (monthLineWidth / 2) + 3;
+        const monthMoonSeparatorR = monthsRingR + (monthLineWidth / 2) + 2;
         ctx.beginPath();
         ctx.arc(0, 0, monthMoonSeparatorR, 0, 2 * Math.PI);
         ctx.lineWidth = 2.5;
@@ -2140,27 +2151,27 @@
         const moonRingR = monthMoonSeparatorR + (isExpandedMode ? 8 : 10);
 
         // --- DRAW VENUS RING (inner planet, 2nd from Moon) ---
-        const venusRingR = effectiveRadius + (isExpandedMode ? 44 : 32);
+        const venusRingR = effectiveRadius + (isExpandedMode ? 52 : 32);
         if (isExpandedMode) {
             ctx.beginPath();
             ctx.arc(0, 0, venusRingR, 0, 2 * Math.PI);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = 'rgba(240, 208, 128, 0.12)';
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'rgba(52, 211, 153, 0.08)'; // Emerald Green
             ctx.stroke();
         }
 
         // --- DRAW MERCURY RING (inner planet, closest to Sun) ---
-        const mercuryRingR = effectiveRadius + (isExpandedMode ? 52 : 40);
+        const mercuryRingR = effectiveRadius + (isExpandedMode ? 64 : 40);
         if (isExpandedMode) {
             ctx.beginPath();
             ctx.arc(0, 0, mercuryRingR, 0, 2 * Math.PI);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = 'rgba(156, 163, 175, 0.12)';
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'rgba(192, 132, 252, 0.08)'; // Quicksilver Violet
             ctx.stroke();
         }
 
         // --- DRAW SEASON RING (Sun Track) ---
-        const seasonRingR = effectiveRadius + (isExpandedMode ? 60 : 54);
+        const seasonRingR = effectiveRadius + (isExpandedMode ? 76 : 55);
 
         if (isSeasonLabelMode) {
             const seasonLineWidth = 10;
@@ -2196,38 +2207,38 @@
             // Faint track if natural seasons are toggled off
             ctx.beginPath();
             ctx.arc(0, 0, seasonRingR, 0, 2 * Math.PI);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = isExpandedMode ? 10 : 2;
+            ctx.strokeStyle = isExpandedMode ? 'rgba(251, 191, 36, 0.08)' : 'rgba(255, 255, 255, 0.05)';
             ctx.stroke();
         }
 
         // --- DRAW MARS RING (outer planet, 1st beyond Sun) ---
-        const marsRingR = effectiveRadius + (isExpandedMode ? 69 : 58);
+        const marsRingR = effectiveRadius + (isExpandedMode ? 88 : 58);
         if (isExpandedMode) {
             ctx.beginPath();
             ctx.arc(0, 0, marsRingR, 0, 2 * Math.PI);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = 'rgba(239, 68, 68, 0.12)';
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'rgba(248, 113, 113, 0.08)'; // Iron Red
             ctx.stroke();
         }
 
         // --- DRAW JUPITER RING (outer planet, 2nd beyond Sun) ---
-        const jupiterRingR = effectiveRadius + (isExpandedMode ? 78 : 68);
+        const jupiterRingR = effectiveRadius + (isExpandedMode ? 100 : 68);
         if (isExpandedMode) {
             ctx.beginPath();
             ctx.arc(0, 0, jupiterRingR, 0, 2 * Math.PI);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = 'rgba(251, 146, 60, 0.12)';
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'rgba(96, 165, 250, 0.08)'; // Sapphire Blue
             ctx.stroke();
         }
 
         // --- DRAW SATURN RING (outer planet, 3rd beyond Sun) ---
-        const saturnRingR = effectiveRadius + (isExpandedMode ? 87 : 78);
+        const saturnRingR = effectiveRadius + (isExpandedMode ? 112 : 78);
         if (isExpandedMode) {
             ctx.beginPath();
             ctx.arc(0, 0, saturnRingR, 0, 2 * Math.PI);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = 'rgba(167, 139, 250, 0.12)';
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = 'rgba(168, 162, 158, 0.08)'; // Leaden Grey
             ctx.stroke();
         }
 
@@ -2248,14 +2259,14 @@
             ctx.beginPath();
             ctx.arc(0, 0, moonRingR, 0, 2 * Math.PI);
             ctx.lineWidth = moonRingLineWidth;
-            ctx.strokeStyle = 'rgba(196, 181, 253, 0.08)';
+            ctx.strokeStyle = 'rgba(229, 231, 235, 0.08)'; // Pure Silver (Moon)
             ctx.stroke();
 
             const moonPhaseLabels = [
-                { label: '☽ NEW MOON',      phaseFrac: 0    },
-                { label: '☽ FIRST QUARTER', phaseFrac: 0.25 },
-                { label: '☽ FULL MOON',     phaseFrac: 0.5  },
-                { label: '☽ LAST QUARTER',  phaseFrac: 0.75 },
+                { label: '☽ MOON',      phaseFrac: 0    },
+                { label: '', phaseFrac: 0.25 },
+                { label: '',     phaseFrac: 0.5  },
+                { label: '',  phaseFrac: 0.75 },
             ];
 
             for (const mph of moonPhaseLabels) {
@@ -2272,7 +2283,7 @@
                 ctx.save();
                 ctx.fillStyle = '#c4b5fd';
                 ctx.globalAlpha = 0.5;
-                ctx.font = '700 7px -apple-system, sans-serif';
+                ctx.font = '700 12px "Segoe UI Symbol", "Apple Symbols", -apple-system, sans-serif';
                 const mChars = Array.from(mph.label);
                 let mAngle = tickAngle + 5 / moonRingR;
                 for (let i = 0; i < mChars.length; i++) {
@@ -2286,81 +2297,22 @@
                 ctx.restore();
             }
 
-            // --- PLANET RINGS: synodic cycle phases ---
+            // --- PLANET RINGS: Synodic markers ---
             const synodicDefs = [
-                {
-                    name: 'VENUS', ringR: venusRingR, color: '#fde68a',
-                    body: Astronomy.Body.Venus, synodicDays: 583.92,
-                    phases: [
-                        { label: '♀ INF. CONJ',     deg: 0   },
-                        { label: '♀ E. ELONG.',      deg: 72  },
-                        { label: '♀ SUP. CONJ',      deg: 180 },
-                        { label: '♀ W. ELONG.',      deg: 288 },
-                    ]
-                },
-                {
-                    name: 'MERCURY', ringR: mercuryRingR, color: '#9ca3af',
-                    body: Astronomy.Body.Mercury, synodicDays: 115.88,
-                    phases: [
-                        { label: '☿ INF. CONJ',     deg: 0   },
-                        { label: '☿ E. ELONG.',      deg: 63  },
-                        { label: '☿ SUP. CONJ',      deg: 180 },
-                        { label: '☿ W. ELONG.',      deg: 297 },
-                    ]
-                },
-                {
-                    name: 'MARS', ringR: marsRingR, color: '#f87171',
-                    body: Astronomy.Body.Mars, synodicDays: 779.94,
-                    phases: [
-                        { label: '♂ CONJ',           deg: 0   },
-                        { label: '♂ E. QUAD.',        deg: 90  },
-                        { label: '♂ OPP.',            deg: 180 },
-                        { label: '♂ W. QUAD.',        deg: 270 },
-                    ]
-                },
-                {
-                    name: 'JUPITER', ringR: jupiterRingR, color: '#fb923c',
-                    body: Astronomy.Body.Jupiter, synodicDays: 398.88,
-                    phases: [
-                        { label: '♃ CONJ',           deg: 0   },
-                        { label: '♃ E. QUAD.',        deg: 90  },
-                        { label: '♃ OPP.',            deg: 180 },
-                        { label: '♃ W. QUAD.',        deg: 270 },
-                    ]
-                },
-                {
-                    name: 'SATURN', ringR: saturnRingR, color: '#a78bfa',
-                    body: Astronomy.Body.Saturn, synodicDays: 378.09,
-                    phases: [
-                        { label: '♄ CONJ',           deg: 0   },
-                        { label: '♄ E. QUAD.',        deg: 90  },
-                        { label: '♄ OPP.',            deg: 180 },
-                        { label: '♄ W. QUAD.',        deg: 270 },
-                    ]
-                },
+                { name: 'VENUS',   ringR: venusRingR,   color: '#34d399', events: [{ label: '♀ VENUS', offset: 0 }] },
+                { name: 'MERCURY', ringR: mercuryRingR, color: '#c084fc', events: [{ label: '☿ MERCURY', offset: 0 }] },
+                { name: 'MARS',    ringR: marsRingR,    color: '#f87171', events: [{ label: '♂ MARS', offset: 0 }] },
+                { name: 'JUPITER', ringR: jupiterRingR, color: '#60a5fa', events: [{ label: '♃ JUPITER', offset: 0 }] },
+                { name: 'SATURN',  ringR: saturnRingR,  color: '#a8a29e', events: [{ label: '♄ SATURN', offset: 0 }] },
             ];
 
             for (const pl of synodicDefs) {
-                // Find last conjunction via SearchRelativeLongitude (planet lon = sun lon → rel. lon = 0)
-                let conjAnchorAngle = seasonAngle; // fallback: use Sun's current position
-                try {
-                    const searchBackMs = pl.synodicDays * 1.1 * 24 * 3600 * 1000;
-                    const searchFrom = new Astronomy.AstroTime(new Date(now.getTime() - searchBackMs));
-                    const conjEvent = Astronomy.SearchRelativeLongitude(pl.body, 0, searchFrom);
-                    if (conjEvent) {
-                        // Get Sun's ecliptic longitude at conjunction time — that's where 0° sits on the ring
-                        const conjSunVec = Astronomy.GeoVector(Astronomy.Body.Sun, conjEvent, true);
-                        const conjSunEcl = Astronomy.Ecliptic(conjSunVec);
-                        conjAnchorAngle = (Math.PI - (conjSunEcl.elon * Math.PI / 180)) % (2 * Math.PI);
-                    }
-                } catch(e) { /* use fallback */ }
+                for (const event of pl.events) {
+                    // Anchor ticks dynamically to the Sun's position for a smooth, continuous synodic cycle
+                    const tickAngle = seasonAngle + event.offset;
+                    const tickW = 6;
 
-                const tickW = 6;
-                for (const ph of pl.phases) {
-                    // Phase deg=0 is at conjunction anchor; advances clockwise (decreasing canvas angle)
-                    const phaseRad = (ph.deg / 360) * 2 * Math.PI;
-                    const tickAngle = conjAnchorAngle - phaseRad;
-
+                    // Draw tick line
                     ctx.beginPath();
                     ctx.moveTo((pl.ringR - tickW) * Math.cos(tickAngle), (pl.ringR - tickW) * Math.sin(tickAngle));
                     ctx.lineTo((pl.ringR + tickW) * Math.cos(tickAngle), (pl.ringR + tickW) * Math.sin(tickAngle));
@@ -2368,11 +2320,13 @@
                     ctx.strokeStyle = '#374151';
                     ctx.stroke();
 
+                    // Draw text label
                     ctx.save();
                     ctx.fillStyle = pl.color;
                     ctx.globalAlpha = 0.55;
-                    ctx.font = '700 7px -apple-system, sans-serif';
-                    const chars = Array.from(ph.label);
+                    ctx.font = '700 12px "Segoe UI Symbol", "Apple Symbols", -apple-system, sans-serif';
+                    
+                    const chars = Array.from(event.label);
                     let cAngle = tickAngle + 5 / pl.ringR;
                     for (let i = 0; i < chars.length; i++) {
                         const cw = ctx.measureText(chars[i]).width;
@@ -2400,7 +2354,7 @@
                 ctx.fillStyle = '#fbbf24';
                 ctx.globalAlpha = 0.55;
                 ctx.font = '700 7px -apple-system, sans-serif';
-                const sunChars = Array.from('☉ SUN');
+                const sunChars = Array.from('');
                 let sAngle = seasonAngle + 5 / seasonRingR;
                 for (let i = 0; i < sunChars.length; i++) {
                     const cw = ctx.measureText(sunChars[i]).width;
@@ -2417,8 +2371,8 @@
         // ---- DRAW ZODIAC RING(S) (Fixed Stars — outermost sphere) ----
         // Expanded: two concentric rings — inner = Sidereal, outer = Tropical
         // Condensed: a single ring, toggled between Tropical and Sidereal
-        const siderealZodiacRingR = effectiveRadius + (isExpandedMode ? 98 : 90);
-        const tropicalZodiacRingR = effectiveRadius + (isExpandedMode ? 110 : 104);
+        const siderealZodiacRingR = effectiveRadius + (isExpandedMode ? 125 : 90);
+        const tropicalZodiacRingR = effectiveRadius + (isExpandedMode ? 139 : 104);
         const zodiacRingR = effectiveRadius + 74;
         const zodiacSymbols = ['♈︎', '♉︎', '♊︎', '♋︎', '♌︎', '♍︎', '♎︎', '♏︎', '♐︎', '♑︎', '♒︎', '♓︎'];
         const zodiacNames = ['ARIES', 'TAURUS', 'GEMINI', 'CANCER', 'LEO', 'VIRGO', 'LIBRA', 'SCORPIO', 'SAGITTARIUS', 'CAPRICORN', 'AQUARIUS', 'PISCES'];
@@ -2493,7 +2447,7 @@
 
         // --- DRAW LITURGICAL RING ---
         if (isLiturgicalMode) {
-            const litRingR = effectiveRadius + (isExpandedMode ? 122 : 94); 
+            const litRingR = effectiveRadius + (isExpandedMode ? 152 : 94);
             const litWidth = isExpandedMode ? 10 : 12;
             const litGap = 0.03; 
             
@@ -2624,7 +2578,7 @@
             ctx.save();
             ctx.translate(px, py);
             ctx.rotate(-zodiacRotationOffset);
-            ctx.font = `bold ${planetFontSize}px sans-serif`;
+            ctx.font = `bold ${planetFontSize}px "Segoe UI Symbol", "Apple Symbols", sans-serif`;
             ctx.fillStyle = '#1c1c21';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -2698,7 +2652,7 @@
             ctx.moveTo(innerDist * Math.cos(angle), innerDist * Math.sin(angle));
             ctx.lineTo(effectiveRadius * Math.cos(angle), effectiveRadius * Math.sin(angle));
             
-            ctx.strokeStyle = isHour ? (h < 12 ? '#fbbf24' : '#60a5fa') : '#4b5563';
+            ctx.strokeStyle = isHour ? (h <= 12 ? '#fbbf24' : '#60a5fa') : '#4b5563';
             ctx.lineWidth = isHour ? 3 : 1.5;
             ctx.stroke();
         }
@@ -2735,7 +2689,7 @@
         // --- DRAW UNEQUAL HOUR HAND (Long Minute Hand) ---
         ctx.beginPath();
         ctx.moveTo(0, 0);
-        ctx.lineTo((effectiveRadius - 48) * Math.cos(hourHandAngle), (effectiveRadius - 48) * Math.sin(hourHandAngle));
+        ctx.lineTo((effectiveRadius - 38) * Math.cos(hourHandAngle), (effectiveRadius - 38) * Math.sin(hourHandAngle));
         ctx.lineWidth = 6;
         ctx.strokeStyle = accentColor;
         ctx.lineCap = 'round';
