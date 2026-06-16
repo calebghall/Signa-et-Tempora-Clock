@@ -10,15 +10,18 @@
     <meta name="theme-color" content="#1c1c21">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="S&T Clock">
+    <meta name="apple-mobile-web-app-title" content="SETT Clock">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-title" content="S&T Clock">
+    <meta name="mobile-web-app-title" content="SETT Clock">
     
-    <!-- Embedded SVG App Icon for Home Screen -->
-    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFjMWMyMSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQwIiBmaWxsPSJub25lIiBzdHJva2U9IiNmYmJmMjQiIHN0cm9rZS13aWR0aD0iOCIvPjwvc3ZnPg==">
+    <!-- Standard Favicon for desktop browsers -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzFjMWMyMSIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iMTIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PGNpcmNsZSByPSIyMjAiIGN4PSIyNTYiIGN5PSIyNTYiIHN0cm9rZT0iIzExMTExMyIgLz48Y2lyY2xlIHI9IjE5OCIgY3g9IjI1NiIgY3k9IjI1NiIgc3Ryb2tlPSIjNGI1NTYzIiAvPjxjaXJjbGUgcj0iMTc2IiBjeD0iMjU2IiBjeT0iMjU2IiBzdHJva2U9IiMyNTYzZWIiIC8+PGNpcmNsZSByPSIxNTQiIGN4PSIyNTYiIGN5PSIyNTYiIHN0cm9rZT0iI2RjMjYyNiIgLz48Y2lyY2xlIHI9IjEzMiIgY3g9IjI1NiIgY3k9IjI1NiIgc3Ryb2tlPSIjZWFiMzA4IiAvPjxjaXJjbGUgcj0iMTEwIiBjeD0iMjU2IiBjeT0iMjU2IiBzdHJva2U9IiMxNmEzNGEiIC8+PGNpcmNsZSByPSI4OCIgY3g9IjI1NiIgY3k9IjI1NiIgc3Ryb2tlPSIjN2MzYWVkIiAvPjxjaXJjbGUgcj0iNjYiIGN4PSIyNTYiIGN5PSIyNTYiIHN0cm9rZT0iI2UyZThmMCIgLz48Y2lyY2xlIHI9IjQ0IiBjeD0iMjU2IiBjeT0iMjU2IiBzdHJva2U9IiNmZmZmZmYiIC8+PGNpcmNsZSByPSI2IiBjeD0iMjU2IiBjeT0iMjU2IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9Im5vbmUiIC8+PC9nPjwvc3ZnPg==">
+
+    <!-- Embedded SVG App Icon for iOS/Android Home Screen -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzFjMWMyMSIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iMTIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PGNpcmNsZSByPSIyMjAiIGN4PSIyNTYiIGN5PSIyNTYiIHN0cm9rZT0iIzExMTExMyIgLz48Y2lyY2xlIHI9IjE5OCIgY3g9IjI1NiIgY3k9IjI1NiIgc3Ryb2tlPSIjNGI1NTYzIiAvPjxjaXJjbGUgcj0iMTc2IiBjeD0iMjU2IiBjeT0iMjU2IiBzdHJva2U9IiMyNTYzZWIiIC8+PGNpcmNsZSByPSIxNTQiIGN4PSIyNTYiIGN5PSIyNTYiIHN0cm9rZT0iI2RjMjYyNiIgLz48Y2lyY2xlIHI9IjEzMiIgY3g9IjI1NiIgY3k9IjI1NiIgc3Ryb2tlPSIjZWFiMzA4IiAvPjxjaXJjbGUgcj0iMTEwIiBjeD0iMjU2IiBjeT0iMjU2IiBzdHJva2U9IiMxNmEzNGEiIC8+PGNpcmNsZSByPSI4OCIgY3g9IjI1NiIgY3k9IjI1NiIgc3Ryb2tlPSIjN2MzYWVkIiAvPjxjaXJjbGUgcj0iNjYiIGN4PSIyNTYiIGN5PSIyNTYiIHN0cm9rZT0iI2UyZThmMCIgLz48Y2lyY2xlIHI9IjQ0IiBjeD0iMjU2IiBjeT0iMjU2IiBzdHJva2U9IiNmZmZmZmYiIC8+PGNpcmNsZSByPSI2IiBjeD0iMjU2IiBjeT0iMjU2IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9Im5vbmUiIC8+PC9nPjwvc3ZnPg==">
     
     <!-- Embedded JSON Web App Manifest -->
-    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Signa%20et%20Tempora%20Clock%22%2C%22short_name%22%3A%22Signa%20et%20Tempora%20%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23111113%22%2C%22theme_color%22%3A%22%231c1c21%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFjMWMyMSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQwIiBmaWxsPSJub25lIiBzdHJva2U9IiNmYmJmMjQiIHN0cm9rZS13aWR0aD0iOCIvPjwvc3ZnPg%3D%3D%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Signa%20et%20Tempora%20Clock%22%2C%22short_name%22%3A%22SETT%20Clock%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23111113%22%2C%22theme_color%22%3A%22%231c1c21%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzFjMWMyMSIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iMTIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI%2BPGNpcmNsZSByPSIyMjAiIGN4PSIyNTYiIGN5PSIyNTYiIHN0cm9rZT0iIzExMTExMyIgLz48Y2lyY2xlIHI9IjE5OCIgY3g9IjI1NiIgY3k9IjI1NiIgc3Ryb2tlPSIjNGI1NTYzIiAvPjxjaXJjbGUgcj0iMTc2IiBjeD0iMjU2IiBjeT0iMjU2IiBzdHJva2U9IiMyNTYzZWIiIC8%2BPGNpcmNsZSByPSIxNTQiIGN4PSIyNTYiIGN5PSIyNTYiIHN0cm9rZT0iI2RjMjYyNiIgLz48Y2lyY2xlIHI9IjEzMiIgY3g9IjI1NiIgY3k9IjI1NiIgc3Ryb2tlPSIjZWFiMzA4IiAvPjxjaXJjbGUgcj0iMTEwIiBjeD0iMjU2IiBjeT0iMjU2IiBzdHJva2U9IiMxNmEzNGEiIC8%2BPGNpcmNsZSByPSI4OCIgY3g9IjI1NiIgY3k9IjI1NiIgc3Ryb2tlPSIjN2MzYWVkIiAvPjxjaXJjbGUgcj0iNjYiIGN4PSIyNTYiIGN5PSIyNTYiIHN0cm9rZT0iI2UyZThmMCIgLz48Y2lyY2xlIHI9IjQ0IiBjeD0iMjU2IiBjeT0iMjU2IiBzdHJva2U9IiNmZmZmZmYiIC8%2BPGNpcmNsZSByPSI2IiBjeD0iMjU2IiBjeT0iMjU2IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9Im5vbmUiIC8%2BPC9nPjwvc3ZnPg%3D%3D%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
 
     <style>
         :root {
@@ -594,6 +597,14 @@
             <button class="icon-btn" id="infoBtn" onclick="toggleInfo()" title="Info">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             </button>
+            <button class="icon-btn" id="timeBtn" onclick="toggleTimeMenu()" title="Time Controls">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 22h14"></path>
+                    <path d="M5 2h14"></path>
+                    <path d="M17 22v-5l-5-5 5-5V2"></path>
+                    <path d="M7 22v-5l5-5-5-5V2"></path>
+                </svg>
+            </button>
             <!-- Settings Cog Icon -->
             <button class="icon-btn" id="settingsBtn" onclick="toggleOptions()" title="Options">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -631,7 +642,7 @@
         <div class="info-list">
             <div class="info-row"><span>"And God said: Let there be lights made in the firmament of heaven, to divide the day and the night, and let them be for signs, and for seasons, and for days and years:"</span><span>Gen 1:14</span></div>
             <p class="info-text">
-            S&T Clock (pronounced <i>"set"</i> as in <i><b>S</b>igna <b>e</b>t <b>T</b>empora</i>) measures time using 24 unequal hours each solar day. The hours are unequal in the sense that in summer, the 12 hours above the horizon represent more time than the 12 hours below, while the opposite is true for winter. Daytime hours of the same day, as well as nighttime hours of the same night, are equal; but daytime hours and nighttime hours of the same day are only of equal length on the Equinoxes. 
+            SETT Clock measures time using 24 unequal hours each solar day. The hours are unequal in the sense that in summer, the 12 hours above the horizon represent more time than the 12 hours below, while the opposite is true for winter. Daytime hours of the same day, as well as nighttime hours of the same night, are equal; but daytime hours and nighttime hours of the same day are only of equal length on the Equinoxes. 
             </p>
             <div class="info-row"><span>"The heavens shew forth the glory of God, and the firmament declareth the work of his hands."</span><span>Ps 19:1</span></div>
             <p class="info-text">
@@ -646,9 +657,12 @@
         </div>
     </div>
 
-    <!-- Options Drawer -->
-    <div class="drawer-panel" id="optionsPanel">
-        <div class="speed-slider-container">
+    <!-- Time Controls Drawer -->
+    <div class="drawer-panel" id="timePanel">
+        <div class="panel-header">
+            <h3>Time Controls</h3>
+        </div>
+        <div class="speed-slider-container" style="background: none; padding: 0;">
             <div class="speed-slider-header">
                 <span class="date-display" id="dateDisplay">Real Time</span>
                 <input type="date" id="jumpDateInput" class="date-input" onchange="handleJumpDate()" title="Jump to exact date">
@@ -658,7 +672,8 @@
                 <span style="font-size: 11px; text-transform: uppercase;">Time Increment:</span>
                 <span id="incrementLabel" style="color: var(--accent-day); font-weight: 700;">1 Second</span>
             </div>
-            <input type="range" min="0" max="8" value="0" class="speed-range" id="incrementSlider" oninput="updateIncrementLabel()">
+            
+            <input type="range" min="0" max="8" value="0" class="speed-range" id="incrementSlider" oninput="updateIncrementLabel(); if(this.value > 0 && playMode === 'play') setVCRMode('ff'); else if(this.value == 0) resetSpeed();">
 
             <div style="display:flex; justify-content: space-between; gap:8px; margin-top: 10px;">
                 <button class="icon-btn" onclick="stepTime(-1)" title="Skip Backward" style="flex:1;">
@@ -667,7 +682,7 @@
                 <button class="icon-btn" id="btnRw" onclick="setVCRMode('rw')" title="Rewind" style="flex:1; color: var(--text-muted);">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
                 </button>
-                <button class="icon-btn" id="btnPlayPause" onclick="togglePlayPause()" title="Play/Pause" style="flex:1; color: var(--text-muted);">
+                <button class="icon-btn" id="btnPlayPause" onclick="togglePlayPause()" title="Play/Pause" style="flex:1; color: var(--text-main);">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                 </button>
                 <button class="icon-btn" id="btnFf" onclick="setVCRMode('ff')" title="Fast Forward" style="flex:1; color: var(--text-muted);">
@@ -680,6 +695,14 @@
 
             <button class="reset-btn" onclick="resetSpeed()" style="width:100%; margin-top: 8px;">Reset to Now</button>
         </div>
+    </div>
+
+    <!-- Options Drawer -->
+    <div class="drawer-panel" id="optionsPanel">
+        <div class="panel-header">
+            <h3>Display Options</h3>
+        </div>
+        <!-- CLOCK FACE -->
         <!-- CLOCK FACE -->
         <p style="font-size: 14px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 8px 0 4px;">Clock Face</p>
         <div class="toggle-wrapper">
@@ -902,7 +925,48 @@
     let lastUpdate = Date.now();
     const synodicCache = {};
 
-    // Toggles
+    // --- PERFORMANCE CACHES & INTERVALS ---
+    const CACHE_INTERVALS = {
+        sunriseSunset: 300000, // 5 minutes
+        moonArc: 30000,        // 30 seconds
+        mercury: 45000,        // 45 seconds
+        planets: 60000,        // 60 seconds for Venus, Mars, Jupiter, Saturn
+        ffThrottle: 60000      // 1 minute visual step threshold for Fast-Forward
+    };
+
+    // Sun and Moon phase cache
+    const systemCache = {
+        computedAt:      null,
+        seasonAngle:     null,    // Sun's ecliptic angle mapped to canvas coords
+        moonZodiacAngle: null,    // Moon's ecliptic angle in canvas coords
+        phaseFraction:   null,    // Moon phase 0–1
+    };
+
+    // Granular Planetary Cache
+    const planetData = [
+        { name: 'Mercury', body: Astronomy.Body.Mercury, color: '#c084fc', symbol: '☿', computedAt: null, angle: null, interval: CACHE_INTERVALS.mercury },
+        { name: 'Venus',   body: Astronomy.Body.Venus,   color: '#34d399', symbol: '♀', computedAt: null, angle: null, interval: CACHE_INTERVALS.planets },
+        { name: 'Mars',    body: Astronomy.Body.Mars,    color: '#f87171', symbol: '♂', computedAt: null, angle: null, interval: CACHE_INTERVALS.planets },
+        { name: 'Jupiter', body: Astronomy.Body.Jupiter, color: '#60a5fa', symbol: '♃', computedAt: null, angle: null, interval: CACHE_INTERVALS.planets },
+        { name: 'Saturn',  body: Astronomy.Body.Saturn,  color: '#a8a29e', symbol: '♄', computedAt: null, angle: null, interval: CACHE_INTERVALS.planets },
+    ];
+
+    const sunCache = {
+        computedAt:   null,
+        today:        null,       
+        yesterday:    null,       
+        tomorrow:     null,       
+    };
+
+    const moonArcCache = {
+        computedAt:   null,
+        arcStart:     null,       
+        arcEnd:       null,       
+        currentPhase: null,       
+    };
+
+
+    // --- TOGGLES ---
     let isExpandedMode = true;
     let isProportionalMode = false;
     let isPlanetsMode = true;
@@ -1094,6 +1158,13 @@
         localStorage.setItem('unequalClockLon', lon);
         
         document.getElementById('locationInfo').innerText = `${city} (Lat: ${currentLat.toFixed(2)}, Lon: ${currentLon.toFixed(2)})`;
+
+        // Location change invalidates all location-dependent caches.
+        // Setting computedAt to null forces a recompute on the next frame,
+        // consistent with the unified staleness pattern used by all three caches.
+        sunCache.computedAt     = null;
+        moonArcCache.computedAt = null;
+
         fetchTimezone(lat, lon);
         startClock();
     }
@@ -1404,6 +1475,8 @@
         document.getElementById('infoBtn').classList.remove('active');
         document.getElementById('optionsPanel').classList.remove('open');
         document.getElementById('settingsBtn').classList.remove('active');
+        document.getElementById('timePanel').classList.remove('open');
+        document.getElementById('timeBtn').classList.remove('active');
 
         const isOpen = panel.classList.toggle('open');
         btn.classList.toggle('active');
@@ -1411,6 +1484,21 @@
         if (isOpen) {
             updateLiturgicalData(); 
         }
+    }
+
+    function toggleTimeMenu() {
+        const panel = document.getElementById('timePanel');
+        const btn = document.getElementById('timeBtn');
+
+        document.getElementById('infoPanel').classList.remove('open');
+        document.getElementById('infoBtn').classList.remove('active');
+        document.getElementById('optionsPanel').classList.remove('open');
+        document.getElementById('settingsBtn').classList.remove('active');
+        document.getElementById('liturgicalPanel').classList.remove('open');
+        document.getElementById('calendarBtn').classList.remove('active');
+
+        panel.classList.toggle('open');
+        btn.classList.toggle('active');
     }
 
     function toggleOptions() {
@@ -1421,6 +1509,8 @@
         document.getElementById('infoBtn').classList.remove('active');
         document.getElementById('liturgicalPanel').classList.remove('open');
         document.getElementById('calendarBtn').classList.remove('active');
+        document.getElementById('timePanel').classList.remove('open');
+        document.getElementById('timeBtn').classList.remove('active');
 
         panel.classList.toggle('open');
         btn.classList.toggle('active');
@@ -1434,6 +1524,8 @@
         document.getElementById('settingsBtn').classList.remove('active');
         document.getElementById('liturgicalPanel').classList.remove('open');
         document.getElementById('calendarBtn').classList.remove('active');
+        document.getElementById('timePanel').classList.remove('open');
+        document.getElementById('timeBtn').classList.remove('active');
 
         panel.classList.toggle('open');
         btn.classList.toggle('active');
@@ -1835,6 +1927,7 @@
         }
 
         const now = new Date(simulatedTime);
+        const nowMs = now.getTime(); // used by all three caches for staleness checks
 
         const dateDisplay = document.getElementById('dateDisplay');
         const displayStr = now.toLocaleDateString(undefined, {
@@ -1857,12 +1950,24 @@
             dateDisplay.style.color = "var(--accent-day)";
         }
         
+        // --- FF/RW DETECTION & THROTTLE ---
+        const ffMode = (playMode === 'ff' || playMode === 'rw');
+        
         const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
         const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
 
-        const todaySun = getSunriseSunset(now, currentLat, currentLon);
-        const yesterdaySun = getSunriseSunset(yesterday, currentLat, currentLon);
-        const tomorrowSun = getSunriseSunset(tomorrow, currentLat, currentLon);
+        // 1. SUNRISE/SUNSET CACHE
+        // In FF mode, we only need to bypass the 5-minute cache if we've skipped at least a day
+        const sunForceUpdate = ffMode && Math.abs(nowMs - (sunCache.computedAt || 0)) > 86400000;
+        if (sunCache.computedAt === null || Math.abs(nowMs - sunCache.computedAt) > CACHE_INTERVALS.sunriseSunset || sunForceUpdate) {
+            sunCache.today     = getSunriseSunset(now,       currentLat, currentLon);
+            sunCache.yesterday = getSunriseSunset(yesterday, currentLat, currentLon);
+            sunCache.tomorrow  = getSunriseSunset(tomorrow,  currentLat, currentLon);
+            sunCache.computedAt = nowMs;
+        }
+        const todaySun     = sunCache.today;
+        const yesterdaySun = sunCache.yesterday;
+        const tomorrowSun  = sunCache.tomorrow;
 
         let isDay, periodStart, periodEnd;
 
@@ -1896,8 +2001,6 @@
         // Update Info Panel calculations
         if (document.getElementById('liturgicalPanel').classList.contains('open')) {
             const dayHrMs = dayDurMs / 12;
-            
-            // Upcoming night (for Compline/Bedtime)
             const nightDurMs = tomorrowSun.sunrise.getTime() - todaySun.sunset.getTime();
             const nightHrMs = nightDurMs / 12;
             
@@ -1911,102 +2014,108 @@
             document.getElementById('infoDusk').innerText = formatLocalTime(todaySun.dusk);
             document.getElementById('infoThirdNight').innerText = formatLocalTime(new Date(todaySun.sunset.getTime() + nightHrMs * 3));
             document.getElementById('infoMidnightUpcoming').innerText = formatLocalTime(new Date(todaySun.sunset.getTime() + (tomorrowSun.sunrise.getTime() - todaySun.sunset.getTime()) / 2));
-
         }
 
         // --- TRUE EPHEMERIS via Astronomy Engine ---
         const astroTime = new Astronomy.AstroTime(now);
 
-        // Sun: geocentric ecliptic longitude via GeoVector → Ecliptic conversion
-        const sunVec = Astronomy.GeoVector(Astronomy.Body.Sun, astroTime, true);
-        const sunEcl = Astronomy.Ecliptic(sunVec);
-        const seasonAngle = (Math.PI - (sunEcl.elon * Math.PI / 180)) % (2 * Math.PI);
+        // 2. BASE SYSTEM CACHE (Sun Position & Moon Phase)
+        const systemForceUpdate = ffMode && Math.abs(nowMs - (systemCache.computedAt || 0)) > CACHE_INTERVALS.ffThrottle;
+        if (systemCache.computedAt === null || Math.abs(nowMs - systemCache.computedAt) > CACHE_INTERVALS.planets || systemForceUpdate) {
+            
+            // Sun geocentric ecliptic longitude
+            const sunVec = Astronomy.GeoVector(Astronomy.Body.Sun, astroTime, true);
+            const sunEcl = Astronomy.Ecliptic(sunVec);
+            systemCache.seasonAngle = (Math.PI - (sunEcl.elon * Math.PI / 180)) % (2 * Math.PI);
 
-        const planets = [];
+            // Moon ecliptic position and phase
+            const moonVec = Astronomy.GeoVector(Astronomy.Body.Moon, astroTime, true);
+            const moonEcl = Astronomy.Ecliptic(moonVec);
+            const moonSunDiff = (moonEcl.elon - sunEcl.elon) * Math.PI / 180;
+            systemCache.moonZodiacAngle = systemCache.seasonAngle - moonSunDiff;
+            systemCache.phaseFraction   = Astronomy.MoonPhase(astroTime) / 360;
+
+            systemCache.computedAt = nowMs;
+        }
+
+        const seasonAngle    = systemCache.seasonAngle;
+        const moonZodiacAngle = systemCache.moonZodiacAngle;
+        const phaseFraction  = systemCache.phaseFraction;
+
+        // 3. GRANULAR PLANETS CACHE
+        let activePlanets = [];
         if (isPlanetsMode) {
-            const planetDefs = [
-                // Medieval Alchemical Palette
-                { name: 'Mercury', body: Astronomy.Body.Mercury, color: '#c084fc', symbol: '☿' }, // Quicksilver / Violet
-                { name: 'Venus',   body: Astronomy.Body.Venus,   color: '#34d399', symbol: '♀' }, // Copper / Emerald
-                { name: 'Mars',    body: Astronomy.Body.Mars,    color: '#f87171', symbol: '♂' }, // Iron / Red
-                { name: 'Jupiter', body: Astronomy.Body.Jupiter, color: '#60a5fa', symbol: '♃' }, // Tin / Sapphire
-                { name: 'Saturn',  body: Astronomy.Body.Saturn,  color: '#a8a29e', symbol: '♄' }, // Lead / Earthy Grey
-            ];
-            for (const planet of planetDefs) {
-                const vec = Astronomy.GeoVector(planet.body, astroTime, true);
-                const ecl = Astronomy.Ecliptic(vec);
-                planet.angle = Math.PI - (ecl.elon * Math.PI / 180);
-                planets.push(planet);
+            for (let p of planetData) {
+                const planetForceUpdate = ffMode && Math.abs(nowMs - (p.computedAt || 0)) > CACHE_INTERVALS.ffThrottle;
+                
+                if (p.computedAt === null || Math.abs(nowMs - p.computedAt) > p.interval || planetForceUpdate) {
+                    const vec = Astronomy.GeoVector(p.body, astroTime, true);
+                    const ecl = Astronomy.Ecliptic(vec);
+                    p.angle = Math.PI - (ecl.elon * Math.PI / 180);
+                    p.computedAt = nowMs;
+                }
+                activePlanets.push(p);
             }
         }
-        
-        // Moon: geocentric ecliptic longitude
-        const moonVec = Astronomy.GeoVector(Astronomy.Body.Moon, astroTime, true);
-        const moonEcl = Astronomy.Ecliptic(moonVec);
-        const moonSunDiff = (moonEcl.elon - sunEcl.elon) * Math.PI / 180;
-        const moonZodiacAngle = seasonAngle - moonSunDiff;
-        const phaseFraction = Astronomy.MoonPhase(astroTime) / 360;
 
         if (hour > 12) { hour = 12; minute = 59; }
-
-        const moonPos = getMoonPosition(now, currentLat, currentLon);
-
-        const moonAltitude = getMoonPosition(now, currentLat, currentLon);
-
         const observer = new Astronomy.Observer(currentLat, currentLon, 0);
-        
-        // 1. Start searching from 2 days ago to guarantee we catch the start of the current arc
-        const twoDaysAgo = new Date(now.getTime() - (2 * 86400000));
-        let searchStart = new Astronomy.AstroTime(twoDaysAgo);
-        
-        let mRise = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, searchStart, 3);
-        let mSet  = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, searchStart, 3);
-        
+
+        // 4. MOON ARC CACHE
         let moonContinuousHour = null;
-        let arcStart, arcEnd, currentPhase;
+        const moonForceUpdate = ffMode && Math.abs(nowMs - (moonArcCache.computedAt || 0)) > CACHE_INTERVALS.ffThrottle;
 
-        // 2. Step forward chronologically until we bracket 'now'
-        for (let i = 0; i < 5; i++) {
-            if (mRise && mSet) {
-                let rTime = mRise.date.getTime();
-                let sTime = mSet.date.getTime();
-                let nowMs = now.getTime();
+        if (moonArcCache.computedAt === null || Math.abs(nowMs - moonArcCache.computedAt) > CACHE_INTERVALS.moonArc || moonForceUpdate) {
 
-                if (rTime < sTime) {
-                    // Moon is UP between rTime and sTime
-                    if (nowMs >= rTime && nowMs <= sTime) {
-                        arcStart = rTime; arcEnd = sTime; currentPhase = 'day'; break;
+            const twoDaysAgo = new Date(nowMs - (2 * 86400000));
+            let searchStart = new Astronomy.AstroTime(twoDaysAgo);
+
+            let mRise = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, searchStart, 3);
+            let mSet  = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, searchStart, 3);
+
+            for (let i = 0; i < 5; i++) {
+                if (mRise && mSet) {
+                    let rTime = mRise.date.getTime();
+                    let sTime = mSet.date.getTime();
+
+                    if (rTime < sTime) {
+                        if (nowMs >= rTime && nowMs <= sTime) {
+                            moonArcCache.arcStart     = rTime;
+                            moonArcCache.arcEnd       = sTime;
+                            moonArcCache.currentPhase = 'day';
+                            break;
+                        }
+                        mRise = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, mSet.date, 3);
+                    } else {
+                        if (nowMs >= sTime && nowMs <= rTime) {
+                            moonArcCache.arcStart     = sTime;
+                            moonArcCache.arcEnd       = rTime;
+                            moonArcCache.currentPhase = 'night';
+                            break;
+                        }
+                        mSet = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, mRise.date, 3);
                     }
-                    // Advance mRise to the next one after this set
-                    mRise = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, mSet.date, 3);
                 } else {
-                    // Moon is DOWN between sTime and rTime
-                    if (nowMs >= sTime && nowMs <= rTime) {
-                        arcStart = sTime; arcEnd = rTime; currentPhase = 'night'; break;
-                    }
-                    // Advance mSet to the next one after this rise
-                    mSet = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, mRise.date, 3);
+                    break; 
                 }
-            } else {
-                break; // Fallback if searches fail
             }
+
+            moonArcCache.computedAt = nowMs;
         }
 
-        // 3. Project continuously across all 24 unequal hours
-        if (arcStart && arcEnd) {
-            let fraction = (now.getTime() - arcStart) / (arcEnd - arcStart);
-            if (currentPhase === 'day') {
-                moonContinuousHour = fraction * 12; // 0 to 12 (Above horizon)
-            } else {
-                moonContinuousHour = 12 + (fraction * 12); // 12 to 24 (Below horizon)
-            }
+        if (moonArcCache.arcStart && moonArcCache.arcEnd) {
+            const fraction = (nowMs - moonArcCache.arcStart) / (moonArcCache.arcEnd - moonArcCache.arcStart);
+            moonContinuousHour = moonArcCache.currentPhase === 'day'
+                ? fraction * 12          
+                : 12 + (fraction * 12);  
         }
-        // --- END MOON CALCULATION FIX ---
 
-        updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets, isChristianWeekMode, todaySun);
+        // Pass activePlanets down instead of planetCache.planets
+        updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, activePlanets, isChristianWeekMode, todaySun);
     }
 
-    function updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets, isChristianWeekMode, todaySun) {        const digitalTime = document.getElementById('digitalTime');
+    function updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, planets, isChristianWeekMode, todaySun) {        
+        const digitalTime = document.getElementById('digitalTime');
         const periodLabel = document.getElementById('periodLabel');
         const searchBtn = document.getElementById('searchBtn');
 
@@ -2867,15 +2976,31 @@
         ctx.fill();
     }
 
+    const FPS = 30;
+    const fpsInterval = 1000 / FPS;
+    let thenDraw = 0;
+
     function tick() {
-        calculateUnequalTime();
         animFrame = requestAnimationFrame(tick);
+
+        // Check how much time has passed since the last render
+        const nowDraw = Date.now();
+        const elapsed = nowDraw - thenDraw;
+
+        // Only calculate and draw if enough time has passed (33.3ms for 30 FPS)
+        if (elapsed > fpsInterval) {
+            // Adjust for slight browser timing drift
+            thenDraw = nowDraw - (elapsed % fpsInterval);
+            
+            calculateUnequalTime();
+        }
     }
 
     function startClock() {
         if (animFrame) cancelAnimationFrame(animFrame);
         lastUpdate = Date.now();
         simulatedTime = Date.now();
+        thenDraw = Date.now();
         tick(); 
     }
 
@@ -2892,6 +3017,46 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') document.getElementById('privacyModal').style.display = 'none';
     });
+
+    // ---------------------------------------------------------------------------
+    // BACKGROUND PAUSE
+    // Stops the animation loop when the page is hidden (tab switch, screen lock,
+    // app switch) and restarts it on return. Reduces battery drain on both
+    // Android and iOS.
+    //
+    // visibilitychange: standard event, works in Chrome, Firefox, modern Safari.
+    // pagehide/pageshow: iOS Safari supplement — visibilitychange is unreliable
+    //   in PWA / Add-to-Home-Screen mode, but pagehide/pageshow fire correctly.
+    // ---------------------------------------------------------------------------
+
+    function pauseLoop() {
+        if (animFrame) {
+            cancelAnimationFrame(animFrame);
+            animFrame = null;
+        }
+    }
+
+    function resumeLoop() {
+        if (animFrame) cancelAnimationFrame(animFrame); // prevent duplicate loops
+        if (playMode === 'play') {
+            // Real-time mode: snap back to now so the clock doesn't show the
+            // time it was at when the page was hidden.
+            simulatedTime = Date.now();
+        }
+        // Always resync the delta timer so the first frame after resume doesn't
+        // produce a huge dt and jump the simulation.
+        lastUpdate = Date.now();
+        animFrame = requestAnimationFrame(tick);
+    }
+
+    // Standard — works in Chrome, Firefox, modern Safari
+    document.addEventListener('visibilitychange', () => {
+        document.hidden ? pauseLoop() : resumeLoop();
+    });
+
+    // iOS Safari PWA guard — fires when screen locks or user swipes away
+    window.addEventListener('pagehide', pauseLoop);
+    window.addEventListener('pageshow', resumeLoop);
 
 </script>
 </body>
