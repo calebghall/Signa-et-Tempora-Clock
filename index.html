@@ -669,11 +669,11 @@
             </div>
 
             <div class="speed-labels" style="margin-bottom: -6px; margin-top: 8px;">
-                <span style="font-size: 11px; text-transform: uppercase;">Time Increment:</span>
+                <span style="font-size: 11px; text-transform: uppercase;">Seek/Skip increment per second:</span>
                 <span id="incrementLabel" style="color: var(--accent-day); font-weight: 700;">1 Second</span>
             </div>
             
-            <input type="range" min="0" max="8" value="0" class="speed-range" id="incrementSlider" oninput="updateIncrementLabel(); if(this.value > 0 && playMode === 'play') setVCRMode('ff'); else if(this.value == 0) resetSpeed();">
+            <input type="range" min="0" max="8" value="0" class="speed-range" id="incrementSlider" oninput="updateIncrementLabel()">
 
             <div style="display:flex; justify-content: space-between; gap:8px; margin-top: 10px;">
                 <button class="icon-btn" onclick="stepTime(-1)" title="Skip Backward" style="flex:1;">

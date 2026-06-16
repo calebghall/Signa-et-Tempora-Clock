@@ -1,4 +1,4 @@
-const CACHE_NAME = 's&t-clock-v1.1'; 
+const CACHE_NAME = 'settclock-v2.0'; 
 const CACHE_ASSETS = [
     './',
     'index.html',
