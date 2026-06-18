@@ -2077,6 +2077,12 @@
             if (arcCache.computedAt === null || Math.abs(nowMs - arcCache.computedAt) > interval || forceUpdate) {
                 const twoDaysAgo = new Date(nowMs - (2 * 86400000));
                 let searchStart = new Astronomy.AstroTime(twoDaysAgo);
+                
+                // Clear old cache safety guard
+                arcCache.arcStart = null;
+                arcCache.arcEnd = null;
+                arcCache.currentPhase = null;
+
                 let mRise = Astronomy.SearchRiseSet(body, observer, +1, searchStart, 3);
                 let mSet  = Astronomy.SearchRiseSet(body, observer, -1, searchStart, 3);
 
@@ -2109,7 +2115,7 @@
                 const fraction = (nowMs - arcCache.arcStart) / (arcCache.arcEnd - arcCache.arcStart);
                 return arcCache.currentPhase === 'day' ? fraction * 12 : 12 + (fraction * 12);  
             }
-            return null; // Circumpolar (never rises or never sets)
+            return null; // Circumpolar
         }
 
         // 3. GRANULAR PLANETS CACHE & HORIZON CACHE
@@ -2834,8 +2840,6 @@
         ctx.restore();
 
         // --- DRAW PLANET INDICATORS ---
-        // Traditional Ptolemaic order: Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn
-        // Expanded: each planet gets its own dedicated ring. Condensed: all planets share the Sun's ring.
         const planetRingMap = isExpandedMode ? {
             'Mercury': mercuryRingR,
             'Venus':   venusRingR,
@@ -2850,8 +2854,18 @@
 
         for (const planet of planets) {
             const ringR = planetRingMap[planet.name] || seasonRingR;
-            const px = ringR * Math.cos(planet.angle);
-            const py = ringR * Math.sin(planet.angle);
+            
+            let pAngle;
+            if (isAccurateHorizonMode && planet.continuousHour !== null) {
+                // Horizon Mode: Map to exact rise/set times on the inner rings
+                pAngle = getAngle(planet.continuousHour) - zodiacRotationOffset;
+            } else {
+                // Ecliptic Mode: Map strictly to the Zodiac
+                pAngle = planet.angle;
+            }
+
+            const px = ringR * Math.cos(pAngle);
+            const py = ringR * Math.sin(pAngle);
 
             // Outer dark ring
             ctx.beginPath();
@@ -2868,7 +2882,7 @@
             // Symbol inside
             ctx.save();
             ctx.translate(px, py);
-            ctx.rotate(-zodiacRotationOffset);
+            ctx.rotate(-zodiacRotationOffset); // keep symbol upright
             ctx.font = `bold ${planetFontSize}px "Segoe UI Symbol", "Apple Symbols", sans-serif`;
             ctx.fillStyle = '#1c1c21';
             ctx.textAlign = 'center';
@@ -2877,9 +2891,17 @@
             ctx.restore();
         }
 
-        // Moon Indicator (Primary Ecliptic Position)
+        // --- DRAW MOON INDICATOR ---
         const moonR = moonRingR;
-        let moonAngle = moonZodiacAngle;
+        let moonAngle;
+
+        if (isAccurateHorizonMode && moonContinuousHour !== null) {
+            // Horizon Mode: Map to exact rise/set times on the inner rings
+            moonAngle = getAngle(moonContinuousHour) - zodiacRotationOffset;
+        } else {
+            // Ecliptic Mode: Map strictly to the Zodiac
+            moonAngle = moonZodiacAngle;
+        }
 
         let mx = moonR * Math.cos(moonAngle);
         let my = moonR * Math.sin(moonAngle);
@@ -2890,39 +2912,35 @@
         drawMoonPhase(ctx, phaseFraction, 5.5, 7.5);
         ctx.restore();
 
-        // --- FAINT HORIZON-ACCURATE INDICATORS ---
+        // --- FAINT ZODIAC INDICATORS (Only when Horizon Mode is ON) ---
         if (isAccurateHorizonMode) {
             const horizonRingR = isExpandedMode ? tropicalZodiacRingR : zodiacRingR;
             
-            // Faint Moon Projection
-            if (moonContinuousHour !== null) {
-                let faintMoonAngle = getAngle(moonContinuousHour) - zodiacRotationOffset;
+            // Faint Moon (True Ecliptic Position on Zodiac Ring)
+            let faintMoonAngle = moonZodiacAngle;
+            ctx.save();
+            ctx.translate(horizonRingR * Math.cos(faintMoonAngle), horizonRingR * Math.sin(faintMoonAngle));
+            ctx.rotate(-zodiacRotationOffset); // keep symbol upright
+            ctx.font = `bold ${planetFontSize + 2}px "Segoe UI Symbol", "Apple Symbols", sans-serif`;
+            ctx.fillStyle = 'rgba(229, 231, 235, 0.4)'; // Faint silver/white
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('☽', 0, 0); // Symbol instead of phase
+            ctx.restore();
+
+            // Faint Planets (True Ecliptic Position on Zodiac Ring)
+            for (const planet of planets) {
+                let faintPlanetAngle = planet.angle;
                 ctx.save();
-                ctx.translate(horizonRingR * Math.cos(faintMoonAngle), horizonRingR * Math.sin(faintMoonAngle));
+                ctx.translate(horizonRingR * Math.cos(faintPlanetAngle), horizonRingR * Math.sin(faintPlanetAngle));
                 ctx.rotate(-zodiacRotationOffset); // keep symbol upright
+                ctx.globalAlpha = 0.4;
                 ctx.font = `bold ${planetFontSize + 2}px "Segoe UI Symbol", "Apple Symbols", sans-serif`;
-                ctx.fillStyle = 'rgba(229, 231, 235, 0.4)'; // Faint silver/white
+                ctx.fillStyle = planet.color;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('☽', 0, 0); // Symbol instead of phase
+                ctx.fillText(planet.symbol, 0, 0);
                 ctx.restore();
-            }
-
-            // Faint Planet Projections
-            for (const planet of planets) {
-                if (planet.continuousHour !== null) {
-                    let faintPlanetAngle = getAngle(planet.continuousHour) - zodiacRotationOffset;
-                    ctx.save();
-                    ctx.translate(horizonRingR * Math.cos(faintPlanetAngle), horizonRingR * Math.sin(faintPlanetAngle));
-                    ctx.rotate(-zodiacRotationOffset); // keep symbol upright
-                    ctx.globalAlpha = 0.4;
-                    ctx.font = `bold ${planetFontSize + 2}px "Segoe UI Symbol", "Apple Symbols", sans-serif`;
-                    ctx.fillStyle = planet.color;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(planet.symbol, 0, 0);
-                    ctx.restore();
-                }
             }
         }
 
