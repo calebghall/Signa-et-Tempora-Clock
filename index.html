@@ -737,15 +737,15 @@
             <span class="toggle-label right" id="labelPlanetsOn" onclick="setPlanetsMode(true)">Show Planets</span>
         </div>
 
-        <p style="font-size: 14px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 16px 0 4px;">Moon</p>
+        <!-- HORIZON -->
+        <p style="font-size: 14px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 16px 0 4px;">Accurate Horizon</p>
         <div class="toggle-wrapper">
-            <span class="toggle-label left" id="labelMoonEcliptic" onclick="setMoonMode(false)">Ecliptic Accurate</span>
+            <span class="toggle-label left active" id="labelHorizonOff" onclick="setHorizonMode(false)">Ecliptic Only</span>
             <label class="switch">
-                <!-- Defaults to checked (Horizon Aligned) to match original behavior -->
-                <input type="checkbox" id="moonModeToggle" onchange="toggleMoonMode()" checked>
+                <input type="checkbox" id="horizonModeToggle" onchange="toggleHorizonMode()">
                 <span class="slider"></span>
             </label>
-            <span class="toggle-label right active" id="labelMoonHorizon" onclick="setMoonMode(true)">Horizon Aligned</span>
+            <span class="toggle-label right" id="labelHorizonOn" onclick="setHorizonMode(true)">Show Horizon Rings</span>
         </div>
 
         <!-- SEASONS -->
@@ -954,11 +954,11 @@
 
     // Granular Planetary Cache
     const planetData = [
-        { name: 'Mercury', body: Astronomy.Body.Mercury, color: '#c084fc', symbol: '☿', computedAt: null, angle: null, interval: CACHE_INTERVALS.mercury },
-        { name: 'Venus',   body: Astronomy.Body.Venus,   color: '#34d399', symbol: '♀', computedAt: null, angle: null, interval: CACHE_INTERVALS.planets },
-        { name: 'Mars',    body: Astronomy.Body.Mars,    color: '#f87171', symbol: '♂', computedAt: null, angle: null, interval: CACHE_INTERVALS.planets },
-        { name: 'Jupiter', body: Astronomy.Body.Jupiter, color: '#60a5fa', symbol: '♃', computedAt: null, angle: null, interval: CACHE_INTERVALS.planets },
-        { name: 'Saturn',  body: Astronomy.Body.Saturn,  color: '#a8a29e', symbol: '♄', computedAt: null, angle: null, interval: CACHE_INTERVALS.planets },
+        { name: 'Mercury', body: Astronomy.Body.Mercury, color: '#c084fc', symbol: '☿', computedAt: null, angle: null, interval: CACHE_INTERVALS.mercury, arcCache: { computedAt: null } },
+        { name: 'Venus',   body: Astronomy.Body.Venus,   color: '#34d399', symbol: '♀', computedAt: null, angle: null, interval: CACHE_INTERVALS.planets, arcCache: { computedAt: null } },
+        { name: 'Mars',    body: Astronomy.Body.Mars,    color: '#f87171', symbol: '♂', computedAt: null, angle: null, interval: CACHE_INTERVALS.planets, arcCache: { computedAt: null } },
+        { name: 'Jupiter', body: Astronomy.Body.Jupiter, color: '#60a5fa', symbol: '♃', computedAt: null, angle: null, interval: CACHE_INTERVALS.planets, arcCache: { computedAt: null } },
+        { name: 'Saturn',  body: Astronomy.Body.Saturn,  color: '#a8a29e', symbol: '♄', computedAt: null, angle: null, interval: CACHE_INTERVALS.planets, arcCache: { computedAt: null } },
     ];
 
     const sunCache = {
@@ -980,6 +980,7 @@
     let isExpandedMode = true;
     let isProportionalMode = false;
     let isPlanetsMode = true;
+    let isAccurateHorizonMode = false;
     let isZodiacTextMode = true;
     let isZodiacNormMode = false;
     let isZodiacSiderealMode = true;
@@ -988,7 +989,6 @@
     let isLiturgicalMode = true;
     let isLiturgicalTextMode = false;
     let isChristianWeekMode = false;
-    let isMoonHorizonMode = true;
 
 
     // --- OFFLINE SUPPORT ---
@@ -1067,6 +1067,12 @@
         } else {
             document.getElementById('planetsToggle').checked = true;
         }
+        if (localStorage.getItem('uh_horizonMode') !== null) {
+            isAccurateHorizonMode = localStorage.getItem('uh_horizonMode') === 'true';
+            document.getElementById('horizonModeToggle').checked = isAccurateHorizonMode;
+        } else {
+            document.getElementById('horizonModeToggle').checked = false; // Ecliptic by default
+        }
         if (localStorage.getItem('uh_zodMode') !== null) {
             isZodiacTextMode = localStorage.getItem('uh_zodMode') === 'true';
             document.getElementById('zodiacToggle').checked = isZodiacTextMode;
@@ -1115,12 +1121,6 @@
         } else {
             document.getElementById('weekModeToggle').checked = false;
         }
-        if (localStorage.getItem('uh_moonMode') !== null) {
-            isMoonHorizonMode = localStorage.getItem('uh_moonMode') === 'true';
-            document.getElementById('moonModeToggle').checked = isMoonHorizonMode;
-        } else {
-            document.getElementById('moonModeToggle').checked = true; // Default to Horizon aligned
-        }
         updateToggleLabels();
     }
 
@@ -1134,8 +1134,8 @@
         document.getElementById('labelPlanetsOff').classList.toggle('active', !isPlanetsMode);
         document.getElementById('labelPlanetsOn').classList.toggle('active', isPlanetsMode);
 
-        document.getElementById('labelMoonEcliptic').classList.toggle('active', !isMoonHorizonMode);
-        document.getElementById('labelMoonHorizon').classList.toggle('active', isMoonHorizonMode);
+        document.getElementById('labelHorizonOff').classList.toggle('active', !isAccurateHorizonMode);
+        document.getElementById('labelHorizonOn').classList.toggle('active', isAccurateHorizonMode);
 
         document.getElementById('labelZodiacIcon').classList.toggle('active', !isZodiacTextMode);
         document.getElementById('labelZodiacText').classList.toggle('active', isZodiacTextMode);
@@ -1184,6 +1184,7 @@
         // consistent with the unified staleness pattern used by all three caches.
         sunCache.computedAt     = null;
         moonArcCache.computedAt = null;
+        planetData.forEach(p => p.arcCache.computedAt = null);
 
         fetchTimezone(lat, lon);
         startClock();
@@ -1685,12 +1686,12 @@
     }
     function setPlanetsMode(isOn) { document.getElementById('planetsToggle').checked = isOn; togglePlanetsMode(); }
 
-    function toggleMoonMode() {
-        isMoonHorizonMode = document.getElementById('moonModeToggle').checked;
-        localStorage.setItem('uh_moonMode', isMoonHorizonMode);
+    function toggleHorizonMode() {
+        isAccurateHorizonMode = document.getElementById('horizonModeToggle').checked;
+        localStorage.setItem('uh_horizonMode', isAccurateHorizonMode);
         updateToggleLabels();
     }
-    function setMoonMode(isOn) { document.getElementById('moonModeToggle').checked = isOn; toggleMoonMode(); }
+    function setHorizonMode(isOn) { document.getElementById('horizonModeToggle').checked = isOn; toggleHorizonMode(); }
 
     function toggleZodiacMode() {
         isZodiacTextMode = document.getElementById('zodiacToggle').checked;
@@ -2069,73 +2070,74 @@
         const moonZodiacAngle = systemCache.moonZodiacAngle;
         const phaseFraction  = systemCache.phaseFraction;
 
-        // 3. GRANULAR PLANETS CACHE
+        const observer = new Astronomy.Observer(currentLat, currentLon, 0);
+
+        // --- HELPER: CALCULATE CONTINUOUS HORIZON HOUR FOR ANY BODY ---
+        function getBodyContinuousHour(body, arcCache, nowMs, observer, forceUpdate, interval) {
+            if (arcCache.computedAt === null || Math.abs(nowMs - arcCache.computedAt) > interval || forceUpdate) {
+                const twoDaysAgo = new Date(nowMs - (2 * 86400000));
+                let searchStart = new Astronomy.AstroTime(twoDaysAgo);
+                let mRise = Astronomy.SearchRiseSet(body, observer, +1, searchStart, 3);
+                let mSet  = Astronomy.SearchRiseSet(body, observer, -1, searchStart, 3);
+
+                for (let i = 0; i < 5; i++) {
+                    if (mRise && mSet) {
+                        let rTime = mRise.date.getTime();
+                        let sTime = mSet.date.getTime();
+
+                        if (rTime < sTime) {
+                            if (nowMs >= rTime && nowMs <= sTime) {
+                                arcCache.arcStart = rTime; arcCache.arcEnd = sTime; arcCache.currentPhase = 'day';
+                                break;
+                            }
+                            mRise = Astronomy.SearchRiseSet(body, observer, +1, mSet.date, 3);
+                        } else {
+                            if (nowMs >= sTime && nowMs <= rTime) {
+                                arcCache.arcStart = sTime; arcCache.arcEnd = rTime; arcCache.currentPhase = 'night';
+                                break;
+                            }
+                            mSet = Astronomy.SearchRiseSet(body, observer, -1, mRise.date, 3);
+                        }
+                    } else {
+                        break; 
+                    }
+                }
+                arcCache.computedAt = nowMs;
+            }
+
+            if (arcCache.arcStart && arcCache.arcEnd) {
+                const fraction = (nowMs - arcCache.arcStart) / (arcCache.arcEnd - arcCache.arcStart);
+                return arcCache.currentPhase === 'day' ? fraction * 12 : 12 + (fraction * 12);  
+            }
+            return null; // Circumpolar (never rises or never sets)
+        }
+
+        // 3. GRANULAR PLANETS CACHE & HORIZON CACHE
         let activePlanets = [];
         if (isPlanetsMode) {
             for (let p of planetData) {
                 const planetForceUpdate = ffMode && Math.abs(nowMs - (p.computedAt || 0)) > CACHE_INTERVALS.ffThrottle;
                 
+                // Existing Ecliptic Angle Cache
                 if (p.computedAt === null || Math.abs(nowMs - p.computedAt) > p.interval || planetForceUpdate) {
                     const vec = Astronomy.GeoVector(p.body, astroTime, true);
                     const ecl = Astronomy.Ecliptic(vec);
                     p.angle = Math.PI - (ecl.elon * Math.PI / 180);
                     p.computedAt = nowMs;
                 }
+                
+                // NEW: Accurate Horizon Time Cache
+                p.continuousHour = getBodyContinuousHour(p.body, p.arcCache, nowMs, observer, planetForceUpdate, p.interval);
+                
                 activePlanets.push(p);
             }
         }
 
         if (hour > 12) { hour = 12; minute = 59; }
-        const observer = new Astronomy.Observer(currentLat, currentLon, 0);
 
         // 4. MOON ARC CACHE
-        let moonContinuousHour = null;
         const moonForceUpdate = ffMode && Math.abs(nowMs - (moonArcCache.computedAt || 0)) > CACHE_INTERVALS.ffThrottle;
-
-        if (moonArcCache.computedAt === null || Math.abs(nowMs - moonArcCache.computedAt) > CACHE_INTERVALS.moonArc || moonForceUpdate) {
-
-            const twoDaysAgo = new Date(nowMs - (2 * 86400000));
-            let searchStart = new Astronomy.AstroTime(twoDaysAgo);
-
-            let mRise = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, searchStart, 3);
-            let mSet  = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, searchStart, 3);
-
-            for (let i = 0; i < 5; i++) {
-                if (mRise && mSet) {
-                    let rTime = mRise.date.getTime();
-                    let sTime = mSet.date.getTime();
-
-                    if (rTime < sTime) {
-                        if (nowMs >= rTime && nowMs <= sTime) {
-                            moonArcCache.arcStart     = rTime;
-                            moonArcCache.arcEnd       = sTime;
-                            moonArcCache.currentPhase = 'day';
-                            break;
-                        }
-                        mRise = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, mSet.date, 3);
-                    } else {
-                        if (nowMs >= sTime && nowMs <= rTime) {
-                            moonArcCache.arcStart     = sTime;
-                            moonArcCache.arcEnd       = rTime;
-                            moonArcCache.currentPhase = 'night';
-                            break;
-                        }
-                        mSet = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, mRise.date, 3);
-                    }
-                } else {
-                    break; 
-                }
-            }
-
-            moonArcCache.computedAt = nowMs;
-        }
-
-        if (moonArcCache.arcStart && moonArcCache.arcEnd) {
-            const fraction = (nowMs - moonArcCache.arcStart) / (moonArcCache.arcEnd - moonArcCache.arcStart);
-            moonContinuousHour = moonArcCache.currentPhase === 'day'
-                ? fraction * 12          
-                : 12 + (fraction * 12);  
-        }
+        const moonContinuousHour = getBodyContinuousHour(Astronomy.Body.Moon, moonArcCache, nowMs, observer, moonForceUpdate, CACHE_INTERVALS.moonArc);
 
         // Pass activePlanets down instead of planetCache.planets
         updateUI(hour, minute, isDay, continuousHourFloat, pDay, seasonAngle, phaseFraction, moonZodiacAngle, now, moonContinuousHour, activePlanets, isChristianWeekMode, todaySun);
@@ -2875,17 +2877,9 @@
             ctx.restore();
         }
 
-        // Moon Indicator (Draws on its own ring, outside the months separator)
+        // Moon Indicator (Primary Ecliptic Position)
         const moonR = moonRingR;
-        let moonAngle;
-
-        if (isMoonHorizonMode && moonContinuousHour !== null) {
-            // HORIZON ALIGNED: Convert the moon's actual clock-face angle back into the rotated ring's frame
-            moonAngle = getAngle(moonContinuousHour) - zodiacRotationOffset;
-        } else {
-            // ECLIPTIC ACCURATE: Moon is drawn strictly by Ecliptic longitude, or moon is below horizon
-            moonAngle = moonZodiacAngle;
-        }
+        let moonAngle = moonZodiacAngle;
 
         let mx = moonR * Math.cos(moonAngle);
         let my = moonR * Math.sin(moonAngle);
@@ -2895,6 +2889,42 @@
         ctx.rotate(moonAngle - Math.PI / 2);
         drawMoonPhase(ctx, phaseFraction, 5.5, 7.5);
         ctx.restore();
+
+        // --- FAINT HORIZON-ACCURATE INDICATORS ---
+        if (isAccurateHorizonMode) {
+            const horizonRingR = isExpandedMode ? tropicalZodiacRingR : zodiacRingR;
+            
+            // Faint Moon Projection
+            if (moonContinuousHour !== null) {
+                let faintMoonAngle = getAngle(moonContinuousHour) - zodiacRotationOffset;
+                ctx.save();
+                ctx.translate(horizonRingR * Math.cos(faintMoonAngle), horizonRingR * Math.sin(faintMoonAngle));
+                ctx.rotate(-zodiacRotationOffset); // keep symbol upright
+                ctx.font = `bold ${planetFontSize + 2}px "Segoe UI Symbol", "Apple Symbols", sans-serif`;
+                ctx.fillStyle = 'rgba(229, 231, 235, 0.4)'; // Faint silver/white
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('☽', 0, 0); // Symbol instead of phase
+                ctx.restore();
+            }
+
+            // Faint Planet Projections
+            for (const planet of planets) {
+                if (planet.continuousHour !== null) {
+                    let faintPlanetAngle = getAngle(planet.continuousHour) - zodiacRotationOffset;
+                    ctx.save();
+                    ctx.translate(horizonRingR * Math.cos(faintPlanetAngle), horizonRingR * Math.sin(faintPlanetAngle));
+                    ctx.rotate(-zodiacRotationOffset); // keep symbol upright
+                    ctx.globalAlpha = 0.4;
+                    ctx.font = `bold ${planetFontSize + 2}px "Segoe UI Symbol", "Apple Symbols", sans-serif`;
+                    ctx.fillStyle = planet.color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(planet.symbol, 0, 0);
+                    ctx.restore();
+                }
+            }
+        }
 
         ctx.restore(); // END OF ROTATED RINGS
 
