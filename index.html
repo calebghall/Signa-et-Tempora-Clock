@@ -737,6 +737,17 @@
             <span class="toggle-label right" id="labelPlanetsOn" onclick="setPlanetsMode(true)">Show Planets</span>
         </div>
 
+        <p style="font-size: 14px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 16px 0 4px;">Moon</p>
+        <div class="toggle-wrapper">
+            <span class="toggle-label left" id="labelMoonEcliptic" onclick="setMoonMode(false)">Ecliptic Accurate</span>
+            <label class="switch">
+                <!-- Defaults to checked (Horizon Aligned) to match original behavior -->
+                <input type="checkbox" id="moonModeToggle" onchange="toggleMoonMode()" checked>
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label right active" id="labelMoonHorizon" onclick="setMoonMode(true)">Horizon Aligned</span>
+        </div>
+
         <!-- SEASONS -->
         <p style="font-size: 14px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 16px 0 4px;">Seasons</p>
         <div class="toggle-wrapper">
@@ -977,6 +988,7 @@
     let isLiturgicalMode = true;
     let isLiturgicalTextMode = false;
     let isChristianWeekMode = false;
+    let isMoonHorizonMode = true;
 
 
     // --- OFFLINE SUPPORT ---
@@ -1103,6 +1115,12 @@
         } else {
             document.getElementById('weekModeToggle').checked = false;
         }
+        if (localStorage.getItem('uh_moonMode') !== null) {
+            isMoonHorizonMode = localStorage.getItem('uh_moonMode') === 'true';
+            document.getElementById('moonModeToggle').checked = isMoonHorizonMode;
+        } else {
+            document.getElementById('moonModeToggle').checked = true; // Default to Horizon aligned
+        }
         updateToggleLabels();
     }
 
@@ -1115,6 +1133,9 @@
         
         document.getElementById('labelPlanetsOff').classList.toggle('active', !isPlanetsMode);
         document.getElementById('labelPlanetsOn').classList.toggle('active', isPlanetsMode);
+
+        document.getElementById('labelMoonEcliptic').classList.toggle('active', !isMoonHorizonMode);
+        document.getElementById('labelMoonHorizon').classList.toggle('active', isMoonHorizonMode);
 
         document.getElementById('labelZodiacIcon').classList.toggle('active', !isZodiacTextMode);
         document.getElementById('labelZodiacText').classList.toggle('active', isZodiacTextMode);
@@ -1663,6 +1684,13 @@
         updateToggleLabels();
     }
     function setPlanetsMode(isOn) { document.getElementById('planetsToggle').checked = isOn; togglePlanetsMode(); }
+
+    function toggleMoonMode() {
+        isMoonHorizonMode = document.getElementById('moonModeToggle').checked;
+        localStorage.setItem('uh_moonMode', isMoonHorizonMode);
+        updateToggleLabels();
+    }
+    function setMoonMode(isOn) { document.getElementById('moonModeToggle').checked = isOn; toggleMoonMode(); }
 
     function toggleZodiacMode() {
         isZodiacTextMode = document.getElementById('zodiacToggle').checked;
@@ -2851,11 +2879,11 @@
         const moonR = moonRingR;
         let moonAngle;
 
-        if (moonContinuousHour !== null) {
-            // Convert the moon's actual clock-face angle back into the rotated ring's frame
+        if (isMoonHorizonMode && moonContinuousHour !== null) {
+            // HORIZON ALIGNED: Convert the moon's actual clock-face angle back into the rotated ring's frame
             moonAngle = getAngle(moonContinuousHour) - zodiacRotationOffset;
         } else {
-            // Moon is below horizon — keep zodiac position
+            // ECLIPTIC ACCURATE: Moon is drawn strictly by Ecliptic longitude, or moon is below horizon
             moonAngle = moonZodiacAngle;
         }
 
