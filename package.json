@@ -3,7 +3,7 @@
   "scripts": {
   "postinstall": "cp node_modules/@photostructure/tz-lookup/tz.js js/lib/tz.js && cp node_modules/@photostructure/tz-lookup/LICENSE js/lib/tz-license && cp node_modules/astronomy-engine/astronomy.browser.min.js js/lib/astronomy.browser.min.js"},
   "dependencies": {
-    "@photostructure/tz-lookup": "^11.5.0",
+    "@photostructure/tz-lookup": "^11.7.0",
     "astronomy-engine": "^2.1.19"
   }
 }
