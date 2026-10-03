@@ -1,7 +1,12 @@
-const CACHE_NAME = 'settclock-v2.0'; 
+const CACHE_NAME = 'settclock-v2.1';
 const CACHE_ASSETS = [
     './',
     'index.html',
+    'manifest.webmanifest',
+    'icon-192.png',
+    'icon-512.png',
+    'icon-maskable-512.png',
+    'apple-touch-icon.png',
     'js/lib/tz.js',
     'js/lib/astronomy.browser.min.js'
 ];
